@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>GymTrack - Acceso</title>
+  
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* VARIABLES */
+    :root { 
+        --bg-app: #121212; 
+        --bg-card: #1c1c1e; 
+        --bg-input: #2c2c2e; 
+        --primary: #0d6efd; 
+        --text-main: #FFFFFF; 
+        --text-sec: #A0A0A5; 
+    }
+    
+    body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: var(--bg-app); 
+        color: var(--text-main); 
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    /* CARD */
+    .login-card {
+        background-color: var(--bg-card);
+        border: 1px solid #2a2a2a;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 400px;
+        padding: 30px 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* INPUTS */
+    .form-control-dark { 
+        background-color: var(--bg-input); 
+        border: 1px solid #444; 
+        color: white; 
+        border-radius: 8px; 
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    .form-control-dark:focus { 
+        background-color: #333; 
+        color: white; 
+        outline: none;
+        border-color: var(--primary); 
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    }
+    .form-label {
+        color: var(--text-sec);
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+
+    /* BOTONES */
+    .btn-primary-app {
+        background-color: var(--primary);
+        border: none;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        border-radius: 50px;
+        width: 100%;
+        transition: transform 0.1s, background-color 0.2s;
+    }
+    .btn-primary-app:hover { background-color: #0b5ed7; }
+    .btn-primary-app:active { transform: scale(0.98); }
+
+    /* TABS */
+    .auth-tabs {
+        display: flex;
+        background-color: var(--bg-input);
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 24px;
+    }
+    .auth-tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-sec);
+        transition: 0.3s;
+    }
+    .auth-tab.active {
+        background-color: var(--bg-card);
+        color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* LOGO */
+    .brand-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        background: -webkit-linear-gradient(45deg, #0d6efd, #0dcaf0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* MODAL */
+    .modal-content-hevy { background-color: var(--bg-card); color: white; border: 1px solid #333; border-radius: 16px; }
+    
+    /* ANIMACIÓN */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } 
+    .fade-in-up { animation: fadeIn 0.4s ease-out forwards; }
+  </style>
+</head>
+<body>
+
+  <div class="login-card fade-in-up">
+    <div class="text-center mb-4">
+        <h1 class="brand-title">GymTrack</h1>
+        <p class="text-secondary small">Tu asistente de entrenamiento</p>
+    </div>
+
+    <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchMode('login')">Ingresar</div>
+        <div class="auth-tab" id="tab-register" onclick="switchMode('register')">Registrarse</div>
+    </div>
+
+    <form id="login-form">
+        <div class="mb-3">
+            <label class="form-label">Correo electrónico</label>
+            <input type="email" id="email" class="form-control form-control-dark" placeholder="ejemplo@correo.com" required>
+        </div>
+        <div class="mb-4">
+            <label class="form-label">Contraseña</label>
+            <input type="password" id="password" class="form-control form-control-dark" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-primary-app">INICIAR SESIÓN</button>
+    </form>
+
+    <form id="signup-form" style="display: none;">
+        <div class="row g-2 mb-2">
+            <div class="col-6"><label class="form-label">Nombre</label><input type="text" id="signup-nombre" class="form-control form-control-dark" required></div>
+            <div class="col-6"><label class="form-label">Apellido</label><input type="text" id="signup-apellido" class="form-control form-control-dark" required></div>
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6"><label class="form-label">DNI</label><input type="number" id="signup-dni" class="form-control form-control-dark" required></div>
+            <div class="col-6"><label class="form-label">Nacimiento</label><input type="date" id="signup-fecha" class="form-control form-control-dark" style="color-scheme: dark;" required></div>
+        </div>
+        <div class="mb-2"><label class="form-label">Correo</label><input type="email" id="signup-email" class="form-control form-control-dark" required></div>
+        <div class="mb-4"><label class="form-label">Contraseña</label><input type="password" id="signup-password" class="form-control form-control-dark" required></div>
+        <button type="submit" class="btn-primary-app">CREAR CUENTA</button>
+    </form>
+
+  </div>
+
+  <div class="modal fade" id="customAlertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content modal-content-hevy text-center p-4 border-0 shadow-lg">
+        <div class="mb-3"><i class="fas fa-info-circle text-primary" style="font-size: 2.5rem;"></i></div>
+        <h5 class="fw-bold mb-2 text-white">Atención</h5>
+        <p class="text-secondary small mb-4" id="customAlertText">...</p>
+        <button class="btn btn-primary-app py-2" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- LÓGICA UI ---
+    function switchMode(mode) {
+        if(mode === 'login') {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('tab-login').classList.add('active');
+            document.getElementById('tab-register').classList.remove('active');
+        } else {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+            document.getElementById('tab-login').classList.remove('active');
+            document.getElementById('tab-register').classList.add('active');
+        }
+    }
+    function showAlert(msg) {
+        document.getElementById('customAlertText').innerText = msg;
+        new bootstrap.Modal(document.getElementById('customAlertModal')).show();
+    }
+
+    // --- LOGIN (MODIFICADO CON SEMÁFORO) ---
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = this.querySelector('button'); const oldText = btn.innerText; 
+        btn.innerText = 'Cargando...'; btn.disabled = true;
+        
+        try {
+            const res = await fetch('api/login.php', { method: 'POST', body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value }) });
+            const data = await res.json();
+            
+            if (data.ok) { 
+                // Guardamos la sesión
+                localStorage.setItem('gymtrack_user', JSON.stringify(data.user)); 
+                
+                // SEMÁFORO INTELIGENTE 🚦
+                if (data.user.es_admin === 'S') {
+                    // Si es Jefe, va al panel de administración
+                    window.location.href = 'admin.html';
+                } else {
+                    // Si es Alumno, va a la app normal
+                    window.location.href = 'index.html'; 
+                }
+            } 
+            else { 
+                showAlert(data.msg); 
+            }
+        } catch (e) { 
+            console.error(e);
+            showAlert("Error de conexión"); 
+        }
+        
+        btn.innerText = oldText; btn.disabled = false;
+    });
+
+    // --- REGISTRO ---
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = this.querySelector('button'); const oldText = btn.innerText; 
+        btn.innerText = 'Registrando...'; btn.disabled = true;
+        const payload = {
+            nombre: document.getElementById('signup-nombre').value,
+            apellido: document.getElementById('signup-apellido').value,
+            dni: document.getElementById('signup-dni').value,
+            fecha_nacimiento: document.getElementById('signup-fecha').value,
+            email: document.getElementById('signup-email').value,
+            password: document.getElementById('signup-password').value
+        };
+        try {
+            const res = await fetch('api/register.php', { method: 'POST', body: JSON.stringify(payload) });
+            const data = await res.json();
+            if (data.ok) { showAlert("Cuenta creada con éxito. Por favor inicia sesión."); switchMode('login'); document.getElementById('signup-form').reset(); } 
+            else { showAlert(data.msg); }
+        } catch (e) { showAlert("Error de conexión"); }
+        btn.innerText = oldText; btn.disabled = false;
+    });
+  </script>
+</body>
+</html>

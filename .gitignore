@@ -1,0 +1,43 @@
+# Configuracion local con credenciales
+api/config.php
+.env
+.env.*
+
+# Archivos generados por sistema/editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+.claude/
+
+# Dependencias y cache
+node_modules/
+vendor/
+*.log
+cache/
+tmp/
+temp/
+
+# Backups y archivos comprimidos
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bak
+*.old
+
+# Documentos de entrega y borradores
+*.docx
+*.pdf
+Documento A4 Portada de Proyecto Creativo Retro Azul y Blanco.jpg
+
+# Duplicados/importaciones viejas
+VIDEOS EJERCICIOS/
+HTML/
+index (1).html
+
+# Subidas de usuarios reales
+img/usuarios/*
+!img/usuarios/default.jpg

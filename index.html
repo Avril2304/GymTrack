@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>GymTrack - Pro</title>
+  <link rel="icon" type="image/png" href="img/logod.png">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* VARIABLES */
+    :root { --bg-app: #121212; --bg-card: #1c1c1e; --bg-input: #2c2c2e; --primary: #2D9CDB; --success: #27AE60; --text-main: #FFFFFF; --text-sec: #A0A0A5; --danger: #EB5757; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-app); color: var(--text-main); padding-bottom: 90px; }
+    
+    /* UI GENERAL */
+    .navbar-custom { background-color: var(--bg-card); border-bottom: 1px solid #333; padding: 12px 20px; }
+    .user-chip { background-color: var(--bg-input); border-radius: 20px; padding: 4px 12px 4px 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .user-avatar { width: 32px; height: 32px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+    
+    .hevy-card { background-color: var(--bg-card); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a2a; }
+    
+    /* PERFIL Y ESTADÍSTICAS */
+    .stat-box { background-color: var(--bg-input); padding: 12px 8px; border-radius: 12px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #3a3a3c; }
+    .stat-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 4px; }
+    .stat-label { font-size: 0.75rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* CORRECCIÓN PANTALLA BLANCA EN SELECTS */
+    select { background-color: var(--bg-input) !important; color: white !important; border-color: #444; color-scheme: dark; }
+    select option { background-color: #1c1c1e !important; color: white !important; }
+    
+    /* HISTORIAL TABLA */
+    .workout-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #333; }
+    .workout-date { font-weight: bold; font-size: 1rem; text-transform: capitalize; color: white; }
+    
+    /* FORMULARIOS */
+    .form-control-dark { background-color: var(--bg-input); border: 1px solid #444; color: white; border-radius: 6px; padding: 8px; }
+    .form-control-dark:focus { background-color: #333; color: white; outline: 2px solid var(--primary); border-color: var(--primary); }
+    .modal-content-hevy { background-color: var(--bg-card); color: white; border: 1px solid #333; border-radius: 16px; }
+    
+    /* NAV */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(28, 28, 30, 0.95); border-top: 1px solid #333; display: grid; grid-template-columns: repeat(4, 1fr); padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
+    .nav-item-btn { background: none; border: none; color: var(--text-sec); padding: 12px 0; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .nav-item-btn.active { color: white; } .nav-item-btn.active i { color: var(--primary); }
+    .nav-item-btn i { font-size: 1.5rem; margin-bottom: 2px; }
+    
+    .section-content { display: none; opacity: 0; transition: opacity 0.3s; } .section-content.active { display: block; opacity: 1; }
+    
+    /* OTROS */
+    .exercise-card { background-color: var(--bg-card); border-radius: 12px; margin-bottom: 16px; border: 1px solid #333; overflow: hidden; }
+    .exercise-header { padding: 10px 16px; background-color: #252528; display: flex; justify-content: space-between; align-items: center; }
+    .routine-card { background: linear-gradient(145deg, var(--bg-card) 0%, #252528 100%); border: 1px solid #333; border-radius: 12px; padding: 16px; cursor: pointer; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    
+    /* CALCULADORA */
+    .calc-btn { background-color: var(--bg-input); border: 1px solid #333; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; margin-right: 8px; font-size: 1.1rem; }
+    .calc-btn:hover { background-color: var(--primary); border-color: var(--primary); }
+    .goal-option { border: 1px solid #444; border-radius: 8px; padding: 12px; cursor: pointer; transition: 0.2s; background-color: var(--bg-input); margin-bottom: 8px; text-align: left; }
+    .goal-option.active { border-color: var(--primary); background-color: rgba(45, 156, 219, 0.15); }
+    .goal-title { font-weight: bold; color: white; display: block; margin-bottom: 2px; }
+    .goal-desc { font-size: 0.75rem; color: #aaa; display: block; }
+    .macro-res-box { background: #252528; border-radius: 8px; padding: 10px; text-align: center; border-top: 3px solid var(--primary); }
+    
+    /* FORZAR QUE EL MODAL DE BORRAR ESTÉ SIEMPRE ENCIMA */
+    #deleteConfirmModal {
+    z-index: 10000 !important;
+}
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .fade-in-up { animation: fadeIn 0.4s ease-out forwards; }
+  </style>
+</head>
+<body>
+
+  <div class="navbar-custom d-flex justify-content-between align-items-center sticky-top">
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-dumbbell text-primary fs-4"></i><span class="fw-bold fs-5">GymTrack</span>
+    </div>
+    <div class="d-flex align-items-center">
+        <button class="calc-btn" onclick="openCalcModal()" title="Calculadora Nutricional">
+            <i class="fas fa-calculator"></i>
+        </button>
+        <div class="user-chip" onclick="openProfileModal()">
+            <img id="nav-user-img" src="" class="rounded-circle d-none" style="width: 32px; height: 32px; object-fit: cover;">
+            <div class="user-avatar" id="nav-user-initial">U</div>
+            <span class="small fw-bold pe-1" id="user-name-display">Usuario</span>
+        </div>
+    </div>
+  </div>
+
+  <div class="container mt-3">
+    
+    <div id="tab-history" class="section-content active">
+      <h5 class="fw-bold mb-3 ms-1 text-white">Historial</h5>
+      <div id="history-feed">
+        <div class="text-center py-5 text-secondary"><i class="fas fa-circle-notch fa-spin"></i> Cargando...</div>
+      </div>
+    </div>
+
+    <div id="tab-logger" class="section-content">
+      <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold mb-0 text-white">Registrar</h5><div class="text-white small" id="logger-date">Hoy</div></div>
+      <form id="workout-form">
+        <div id="exercises-list"></div>
+        <div class="d-grid pb-2">
+            <button type="button" id="btn-add-exercise" class="btn btn-outline-primary w-100 py-3 border-dashed mb-3"><i class="fas fa-plus me-2"></i> Añadir Ejercicio</button>
+            <button type="button" class="btn btn-outline-light rounded-pill fw-bold" onclick="abrirModalGuardarRutina()"><i class="fas fa-save me-2"></i> Guardar como Plantilla</button>
+        </div>
+        <div class="d-grid pb-4"><button type="submit" class="btn btn-primary fw-bold py-3 rounded-pill shadow-lg">FINALIZAR ENTRENAMIENTO</button></div>
+      </form>
+    </div>
+
+    <div id="tab-my-routines" class="section-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold mb-0 text-white">Mis Rutinas</h5>
+          <button class="btn btn-sm btn-primary rounded-pill" onclick="abrirEditorVacio()"><i class="fas fa-plus"></i> Nueva</button>
+      </div>
+      <div id="my-routines-feed" class="row g-3"><div class="text-center w-100 py-5 text-secondary"><i class="fas fa-circle-notch fa-spin"></i> Cargando...</div></div>
+    </div>
+
+    <div id="tab-explore" class="section-content">
+      <h5 class="fw-bold mb-4 text-white">Explorar</h5>
+      <div id="explore-content"><div class="text-center w-100 py-5 text-secondary"><i class="fas fa-circle-notch fa-spin"></i> Buscando...</div></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item-btn active" onclick="switchTab('tab-history', this)"><i class="fas fa-history"></i> Historial</button>
+    <button class="nav-item-btn" onclick="switchTab('tab-logger', this)"><i class="fas fa-plus-circle"></i> Registrar</button>
+    <button class="nav-item-btn" onclick="switchTab('tab-my-routines', this)"><i class="fas fa-user"></i> Mis Rutinas</button>
+    <button class="nav-item-btn" onclick="switchTab('tab-explore', this)"><i class="fas fa-compass"></i> Explorar</button>
+  </div>
+
+  <div class="modal fade" id="calcModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content modal-content-hevy"><div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold text-white"><i class="fas fa-apple-alt text-success me-2"></i>Nutrición</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="calc-step-1"><p class="text-light small mb-3">Calcula tus calorías diarias según tu actividad.</p><div class="row g-2 mb-3"><div class="col-6"><input type="number" id="nut-peso" class="form-control form-control-dark" placeholder="Peso (kg)"></div><div class="col-6"><input type="number" id="nut-altura" class="form-control form-control-dark" placeholder="Altura (cm)"></div><div class="col-6"><input type="number" id="nut-edad" class="form-control form-control-dark" placeholder="Edad"></div><div class="col-6"><select id="nut-sexo" class="form-select form-select-dark"><option value="M">Hombre</option><option value="F">Mujer</option></select></div></div>
+  <h6 class="text-light small fw-bold mb-2">NIVEL DE ACTIVIDAD</h6>
+  <select id="nut-actividad" class="form-select form-select-dark mb-3">
+    <option value="1.2">Sedentario (Trabajo de oficina / Sin ejercicio)</option>
+    <option value="1.375">Ligera (Entreno 1 a 3 días por semana)</option>
+    <option value="1.55" selected>Moderada (Entreno 3 a 5 días por semana)</option>
+    <option value="1.725">Intensa (Entreno 6 a 7 días por semana)</option>
+    <option value="1.9">Atleta (Doble turno o trabajo muy físico)</option>
+  </select>
+  <h6 class="text-light small fw-bold mb-2">TU OBJETIVO</h6><div class="d-flex flex-column gap-1 mb-4"><div class="goal-option" onclick="setGoal('deficit', this)"><span class="goal-title">📉 Déficit Calórico</span><span class="goal-desc">Comer menos para perder grasa.</span></div><div class="goal-option active" onclick="setGoal('mantenimiento', this)"><span class="goal-title">⚖️ Mantenimiento</span><span class="goal-desc">Mantener peso actual.</span></div><div class="goal-option" onclick="setGoal('volumen', this)"><span class="goal-title">💪 Volumen / Superávit</span><span class="goal-desc">Comer más para ganar músculo.</span></div></div><button class="btn btn-primary w-100 rounded-pill fw-bold py-2" onclick="calcularNutricion()">CALCULAR AHORA</button></div><div id="calc-step-2" class="d-none text-center"><div class="hevy-card py-4 mb-4" style="border: 2px solid var(--primary);"><div class="display-4 fw-bold text-white mb-0" id="res-kcals">0</div><small class="text-primary fw-bold">KCAL / DÍA</small></div><div class="row g-2 mb-4"><div class="col-4"><div class="macro-res-box" style="border-color:#F2994A;"><div class="h5 fw-bold mb-0 text-white" id="res-prot">0g</div><small class="text-secondary" style="font-size:0.6rem;">PROTES</small></div></div><div class="col-4"><div class="macro-res-box" style="border-color:#2D9CDB;"><div class="h5 fw-bold mb-0 text-white" id="res-carb">0g</div><small class="text-secondary" style="font-size:0.6rem;">CARBOS</small></div></div><div class="col-4"><div class="macro-res-box" style="border-color:#27AE60;"><div class="h5 fw-bold mb-0 text-white" id="res-fat">0g</div><small class="text-secondary" style="font-size:0.6rem;">GRASAS</small></div></div></div><div class="d-flex gap-2"><button class="btn btn-outline-secondary w-50 rounded-pill" onclick="resetCalc()">Volver</button></div></div></div></div></div></div>
+
+  <div class="modal fade" id="profileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-content-hevy"><div class="modal-header"><h5 class="modal-title fw-bold text-white">Mi Perfil</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div class="position-relative d-inline-block mb-3" style="cursor: pointer;" onclick="document.getElementById('input-foto-perfil').click()"><img id="modal-img-real" src="" class="rounded-circle d-none" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--primary);"><div id="modal-avatar-initial" class="d-inline-flex justify-content-center align-items-center bg-primary text-white rounded-circle fw-bold" style="width: 80px; height: 80px; font-size: 2rem;">U</div><div class="position-absolute bottom-0 end-0 bg-dark rounded-circle p-1 border border-secondary" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-camera text-white" style="font-size: 0.7rem;"></i></div></div><input type="file" id="input-foto-perfil" accept="image/*" style="display: none;" onchange="subirFotoPerfil(this)"><h4 class="fw-bold mb-1 text-white" id="modal-name">User</h4><p class="text-secondary small mb-4" id="modal-email">...</p><div class="badge bg-secondary mb-4 p-2 px-3 rounded-pill" id="modal-class-badge" style="font-size: 0.9rem;">Sin Clase</div><div class="row g-2 mb-4"><div class="col-6"><div class="stat-box"><div class="stat-value text-primary" id="modal-days">0</div><div class="stat-label">Días</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-age">--</div><div class="stat-label">Edad</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-weight">--</div><div class="stat-label">Peso</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-height">--</div><div class="stat-label">Altura</div></div></div></div></div><div class="modal-footer flex-column gap-2"><button class="btn btn-outline-light w-100 rounded-pill fw-bold" onclick="openEditProfileModal()">Editar Perfil</button><button class="btn btn-outline-danger w-100 rounded-pill fw-bold" onclick="logout()">Cerrar Sesión</button></div></div></div></div>
+  
+  <div class="modal fade" id="editProfileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-content-hevy"><div class="modal-header"><h5 class="modal-title fw-bold text-white">Editar Datos</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="edit-profile-form"><div class="mb-3"><label class="form-label text-secondary small">Nombre</label><input type="text" id="edit-nombre" class="form-control form-control-dark" required></div><div class="mb-3"><label class="form-label text-secondary small">Apellido</label><input type="text" id="edit-apellido" class="form-control form-control-dark"></div><div class="row mb-3"><div class="col-6"><label class="form-label text-secondary small">Peso (kg)</label><input type="number" id="edit-peso" step="0.1" class="form-control form-control-dark"></div><div class="col-6"><label class="form-label text-secondary small">Altura (m)</label><input type="number" id="edit-altura" step="0.01" class="form-control form-control-dark"></div></div><div class="mb-3"><label class="form-label text-secondary small">Objetivo / Categoría</label><select id="edit-clase" class="form-select form-control-dark"><option value="" disabled>Cargando...</option></select></div><div class="d-grid mt-3"><button type="submit" class="btn btn-primary rounded-pill fw-bold">Guardar Cambios</button></div></form></div></div></div></div>
+  
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-sm"><div class="modal-content modal-content-hevy text-center p-3 border-0 shadow-lg" style="border: 1px solid #444;"><div class="mb-3"><i class="fas fa-trash-alt text-danger" style="font-size: 2rem;"></i></div><h5 class="fw-bold mb-2 text-white">¿Borrar registro?</h5><p class="text-secondary small mb-4">Esta acción no se puede deshacer.</p><div class="d-flex gap-2"><button class="btn btn-outline-secondary w-50 rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger w-50 rounded-pill fw-bold" id="btn-confirm-delete" onclick="executeDelete()">Borrar</button></div></div></div></div>
+
+  <div class="modal fade" id="completeProfileModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-content-hevy p-2 border-primary shadow-lg" style="border-width: 2px;"><div class="modal-body text-center pt-4"><div class="mb-3"><i class="fas fa-check-circle text-primary" style="font-size: 3rem;"></i></div><h4 class="fw-bold mb-2 text-white">Configura tu Plan</h4><p class="text-secondary small mb-4 px-3">Completa tus datos para asignarte las mejores rutinas.</p><form id="onboarding-form" class="text-start"><div class="mb-3"><label class="form-label d-block text-secondary small">Teléfono</label><input type="tel" id="ob-telefono" class="form-control form-control-dark" required></div><div class="row"><div class="col-6 mb-3"><label class="form-label d-block text-secondary small">Peso (kg)</label><input type="number" id="ob-peso" step="0.1" class="form-control form-control-dark" placeholder="70.0" required></div><div class="col-6 mb-3"><label class="form-label d-block text-secondary small">Altura (m)</label><input type="number" id="ob-altura" step="0.01" class="form-control form-control-dark" placeholder="1.75" required></div></div><div class="mb-3"><label class="form-label d-block text-secondary small">Sexo</label><select id="ob-sexo" class="form-select form-control-dark" required onchange="cargarClasesDisponibles(this.value)"><option value="" selected disabled>Selecciona...</option><option value="M">Masculino</option><option value="F">Femenino</option></select></div><div class="mb-3"><label class="form-label d-block text-secondary small">Objetivo / Clase</label><select id="ob-clase" class="form-select form-control-dark" required disabled><option value="">Selecciona sexo primero...</option></select></div><div class="d-grid mt-3"><button type="submit" class="btn btn-primary rounded-pill fw-bold">Comenzar Aventura</button></div></form></div></div></div></div>
+  
+  <div class="modal fade" id="viewRoutineModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content modal-content-hevy"><div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold text-white" id="vr-title">Rutina</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p class="text-secondary small mb-4" id="vr-desc">Descripción...</p><h6 class="fw-bold small text-secondary mb-3">EJERCICIOS</h6><div id="vr-exercises-list"></div></div><div class="modal-footer border-0 pt-0" id="vr-footer"></div></div></div></div>
+  
+  <div class="modal fade" id="customAlertModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-sm"><div class="modal-content modal-content-hevy text-center p-3 border-0 shadow-lg"><h5 class="fw-bold mb-2 text-white">GymTrack</h5><p class="text-secondary small mb-4" id="customAlertText">...</p><button class="btn btn-primary w-100 rounded-pill fw-bold" data-bs-dismiss="modal">OK</button></div></div></div>
+  
+  <div class="modal fade" id="saveRoutineModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-sm"><div class="modal-content modal-content-hevy p-3 border-0 shadow-lg"><h5 class="fw-bold mb-3 text-white">Crear Rutina</h5><p class="text-secondary small mb-3">Guarda estos ejercicios para repetirlos luego.</p><input type="text" id="new-routine-name" class="form-control form-control-dark mb-3" placeholder="Nombre (ej: Pecho y Bíceps)"><div class="d-grid"><button class="btn btn-primary rounded-pill fw-bold" onclick="guardarRutinaPersonalizada()">Guardar</button></div></div></div></div>
+
+  <div class="modal fade" id="routineEditorModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content modal-content-hevy"><div class="modal-header border-0 pb-0"><h5 class="fw-bold text-white">Editor de Rutina</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="editor-routine-id"><div class="mb-3"><label class="text-secondary small">Nombre</label><input type="text" id="editor-routine-name" class="form-control form-control-dark"></div><label class="text-secondary small mb-2">Ejercicios</label><div id="editor-exercises-list" class="mb-3"></div><div class="d-flex gap-2"><select id="editor-select-add" class="form-select form-control-dark"></select><button class="btn btn-outline-primary" onclick="addEditorEx()"><i class="fas fa-plus"></i></button></div></div><div class="modal-footer border-0 pt-0"><button class="btn btn-primary w-100 rounded-pill fw-bold" onclick="guardarCambiosEditor()">Guardar Cambios</button></div></div></div></div>
+
+  <div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-black border-0">
+        <div class="modal-header border-0 position-absolute w-100" style="z-index:10; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);">
+            <h5 class="modal-title text-white fs-6 fw-bold" id="videoModalTitle">Ejercicio</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0 d-flex align-items-center justify-content-center" style="min-height: 300px; background-color: #000;">
+            <video id="mainVideoPlayer" width="100%" height="auto" loop muted playsinline>
+            <source src="" type="video/mp4">
+            </video>
+        </div>
+        </div>
+    </div>
+  </div>
+
+  <template id="exercise-template">
+    <div class="exercise-card fade-in-up">
+      <div class="exercise-header">
+        <div class="d-flex gap-2 w-100 align-items-center">
+          <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center fw-bold flex-shrink-0" style="width:24px;height:24px;font-size:0.75rem;">1</div>
+          
+          <select class="form-select exercise-select bg-transparent border-0 text-white fw-bold shadow-none p-0 w-100 text-truncate">
+             <option value="">Seleccionar...</option>
+          </select>
+          
+          <button type="button" class="btn btn-sm btn-dark text-primary border-primary btn-video d-none flex-shrink-0" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
+              <i class="fas fa-play" style="font-size: 0.7rem; margin-left: 2px;"></i>
+          </button>
+  
+        </div>
+        <button class="btn btn-link text-secondary p-0 remove-card ms-2"><i class="fas fa-times"></i></button>
+      </div>
+      
+      <div class="p-3">
+          <div class="row g-2 mb-1 text-center text-secondary small fw-bold">
+              <div class="col-4">KG</div><div class="col-4">REPS</div><div class="col-4">SERIES</div>
+          </div>
+          <div class="row g-2 align-items-center">
+              <div class="col-4"><input type="number" class="form-control form-control-dark weight-input" placeholder="0"></div>
+              <div class="col-4"><input type="number" class="form-control form-control-dark reps-input" placeholder="0"></div>
+              <div class="col-4"><input type="number" class="form-control form-control-dark sets-input" placeholder="1" value="1"></div>
+          </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    let user = null;
+    let selectedGoal = 'mantenimiento';
+    let allExercises = [], currentRoutineId = null, currentRoutineExercises = [];
+    
+    // VARIABLES PARA BORRAR (MODAL)
+    let pendingDeleteId = null; 
+    let pendingDeleteType = null; // 'history' o 'routine'
+    
+    let editorExercises = [];
+
+    // --- UTILS ---
+    function safeRedirect(u){ try{window.location.href=u}catch(e){console.warn(u)} }
+    function showAlert(m){ document.getElementById('customAlertText').innerText=m; new bootstrap.Modal(document.getElementById('customAlertModal')).show(); }
+    
+    function updateNavbarAvatar(nombreFoto) {
+        const img = document.getElementById('nav-user-img');
+        const initial = document.getElementById('nav-user-initial');
+        if (nombreFoto && nombreFoto !== 'default.jpg' && nombreFoto !== '') {
+            img.src = `img/usuarios/${nombreFoto}?v=${new Date().getTime()}`;
+            img.classList.remove('d-none');
+            initial.classList.add('d-none');
+        } else {
+            img.classList.add('d-none');
+            initial.classList.remove('d-none');
+            if(user) initial.innerText = user.nombre.charAt(0).toUpperCase();
+        }
+    }
+
+    function renderizarFotoEnModal(nombreFoto) {
+        const img = document.getElementById('modal-img-real');
+        const initial = document.getElementById('modal-avatar-initial');
+        if (nombreFoto && nombreFoto !== 'default.jpg' && nombreFoto !== '') {
+            img.src = `img/usuarios/${nombreFoto}?v=${new Date().getTime()}`;
+            img.classList.remove('d-none');
+            initial.classList.add('d-none');
+        } else {
+            img.classList.add('d-none');
+            initial.classList.remove('d-none');
+        }
+    }
+
+    // --- MANEJO DE VIDEO ---
+    function abrirVideo(nombreVideo, nombreEjercicio) {
+        if (!nombreVideo || nombreVideo === 'null') return showAlert("Este ejercicio no tiene video aún.");
+        const player = document.getElementById('mainVideoPlayer');
+        player.src = `videos/ejercicios/${nombreVideo}`;
+        document.getElementById('videoModalTitle').innerText = nombreEjercicio;
+        new bootstrap.Modal(document.getElementById('videoModal')).show();
+        player.play().catch(e => console.log("Autoplay bloqueado"));
+    }
+    
+    document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('mainVideoPlayer').pause();
+        document.getElementById('mainVideoPlayer').src = "";
+    });
+
+    // --- INIT ---
+    document.addEventListener('DOMContentLoaded', async () => { 
+        const u = localStorage.getItem('gymtrack_user'); 
+        if(!u) { safeRedirect('login.html'); return; } 
+        
+        try {
+            user = JSON.parse(u); 
+            document.getElementById('user-name-display').innerText = user.nombre; 
+            updateNavbarAvatar(user.foto);
+            
+            // Onboarding Check
+            if (!user.telefono || user.telefono === '') { 
+                new bootstrap.Modal(document.getElementById('completeProfileModal')).show(); 
+            }
+
+            // Carga de Datos Segura
+            await loadExercises(); 
+            document.getElementById('btn-add-exercise').addEventListener('click', addExerciseCard); 
+            
+            // Cargas paralelas
+            loadFullHistory(); 
+            loadExploreRoutines();
+            loadMyRoutines();
+
+        } catch(e) {
+            console.error("Error init:", e);
+            localStorage.removeItem('gymtrack_user');
+            safeRedirect('login.html');
+        }
+    });
+
+    // --- CARGAS ASINCRONAS ---
+    async function loadExercises() { 
+        try {
+            const r = await fetch('api/obtener_ejercicios.php');
+            const d = await r.json();
+            if(d.ok){
+                allExercises=d.data; 
+                addExerciseCard(); 
+                const editorSel = document.getElementById('editor-select-add');
+                editorSel.innerHTML = '<option value="">Añadir Ejercicio...</option>';
+                d.data.forEach(e => { editorSel.innerHTML += `<option value="${e.ID_Ejercicio}">${e.nombre}</option>`; });
+            }
+        } catch(e){ console.error(e); } 
+    }
+
+    function addExerciseCard() { 
+        const c = document.getElementById('exercise-template').content.cloneNode(true); 
+        const sel = c.querySelector('.exercise-select'); 
+        const btnVideo = c.querySelector('.btn-video');
+        
+        allExercises.forEach(e => {
+            sel.innerHTML += `<option value="${e.ID_Ejercicio}" data-video="${e.video || ''}">${e.nombre}</option>`; 
+        }); 
+
+        sel.addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            const vid = opt.getAttribute('data-video');
+            if (vid && vid !== 'null' && vid !== '') {
+                btnVideo.classList.remove('d-none');
+                btnVideo.onclick = () => abrirVideo(vid, opt.text);
+            } else {
+                btnVideo.classList.add('d-none');
+            }
+        });
+
+        c.querySelector('.remove-card').addEventListener('click', e => e.target.closest('.exercise-card').remove()); 
+        document.getElementById('exercises-list').appendChild(c); 
+    }
+
+    // --- RUTINAS (Con texto truncado arreglado) ---
+    async function loadMyRoutines() { 
+        const feed = document.getElementById('my-routines-feed'); 
+        try { 
+            const res = await fetch(`api/obtener_mis_rutinas.php?user_id=${user.ID_Usuario}`); 
+            const data = await res.json(); 
+            if(data.ok) { 
+                feed.innerHTML = ''; 
+                if(data.creadas.length > 0) {
+                    feed.innerHTML += `<h6 class="text-white fw-bold mb-2 ps-1 border-start border-3 border-primary">&nbsp;Creadas por mí</h6>`;
+                    data.creadas.forEach(rut => { 
+                        // AQUÍ APLICAMOS LA CLASE text-truncate Y min-width:0
+                        feed.innerHTML += `<div class="col-12 mb-3"><div class="routine-card d-flex flex-row align-items-center justify-content-between" onclick="viewRoutine(${rut.ID_Rutina}, true)"><div style="min-width: 0;"><h6 class="fw-bold text-white mb-0 text-truncate">${rut.nombre}</h6><small class="text-secondary">Toca para ver</small></div><i class="fas fa-chevron-right text-secondary"></i></div></div>`; 
+                    });
+                }
+                if(data.favoritas.length > 0) {
+                    feed.innerHTML += `<h6 class="text-white fw-bold mb-2 mt-2 ps-1 border-start border-3 border-secondary">&nbsp;Favoritas (Sistema)</h6>`;
+                    data.favoritas.forEach(rut => { 
+                        // AQUÍ APLICAMOS LA CLASE text-truncate Y min-width:0
+                        feed.innerHTML += `<div class="col-12 mb-3"><div class="routine-card d-flex flex-row align-items-center" onclick="viewRoutine(${rut.ID_Rutina}, false)"><div class="flex-grow-1" style="min-width: 0;"><h6 class="fw-bold text-white mb-1 text-truncate">${rut.nombre}</h6><p class="small text-secondary mb-0 text-truncate">${rut.descripcion || '...'}</p></div><i class="fas fa-chevron-right text-secondary"></i></div></div>`; 
+                    });
+                }
+                if(data.creadas.length === 0 && data.favoritas.length === 0) feed.innerHTML = `<div class="text-center py-5 text-muted">Sin rutinas.</div>`;
+            } 
+        } catch(e) { feed.innerHTML = '<div class="text-center text-danger">Error cargando rutinas.</div>'; } 
+    }
+
+    async function loadExploreRoutines() { 
+        const feed = document.getElementById('explore-content'); 
+        try { 
+            const res = await fetch(`api/obtener_rutinas.php?user_id=${user.ID_Usuario}`); 
+            const data = await res.json(); 
+            if(data.ok && data.data.length > 0) { 
+                feed.innerHTML = ''; 
+                const recomendadas = data.data.filter(r => r.tipo === 'recomendada'); 
+                const estandar = data.data.filter(r => r.tipo === 'estandar'); 
+                
+                if(recomendadas.length > 0) { 
+                    // APLICAMOS text-truncate
+                    feed.innerHTML += `<div class="section-title text-uppercase text-secondary fw-bold small mb-2 mt-2 border-start border-3 border-primary ps-2">Recomendadas</div><div class="row g-3 mb-4">` + recomendadas.map(r => `<div class="col-6 mb-3"><div class="routine-card" onclick="viewRoutine(${r.ID_Rutina}, false)" style="border-color: var(--primary);"><span class="badge bg-primary mb-2">Tu Plan</span><h6 class="fw-bold text-white mb-1 text-truncate">${r.nombre}</h6><p class="small text-secondary mb-3 text-truncate">${r.descripcion||''}</p><button class="btn btn-sm btn-primary w-100 rounded-pill">Ver</button></div></div>`).join('') + `</div>`; 
+                } 
+                if(estandar.length > 0) { 
+                    // APLICAMOS text-truncate
+                    feed.innerHTML += `<div class="section-title text-uppercase text-secondary fw-bold small mb-2 border-start border-3 border-secondary ps-2">Estándar</div><div class="row g-3">` + estandar.map(r => `<div class="col-6 mb-3"><div class="routine-card" onclick="viewRoutine(${r.ID_Rutina}, false)"><span class="badge bg-secondary mb-2">General</span><h6 class="fw-bold text-white mb-1 text-truncate">${r.nombre}</h6><p class="small text-secondary mb-3 text-truncate">${r.descripcion||''}</p><button class="btn btn-sm btn-outline-light w-100 rounded-pill">Ver</button></div></div>`).join('') + `</div>`; 
+                } 
+            } else { feed.innerHTML = '<div class="text-secondary text-center">No hay rutinas disponibles.</div>'; } 
+        } catch(e) { feed.innerHTML = ''; } 
+    }
+
+    // --- VISOR DE RUTINAS ---
+    window.viewRoutine = async function(rid, esPropia = false) { 
+        currentRoutineId = rid; 
+        new bootstrap.Modal(document.getElementById('viewRoutineModal')).show(); 
+        document.getElementById('vr-exercises-list').innerHTML = 'Cargando...'; 
+        try { 
+            const res = await fetch(`api/obtener_detalle_rutina.php?id=${rid}&user_id=${user.ID_Usuario}`); 
+            const data = await res.json(); 
+            if(data.ok) { 
+                document.getElementById('vr-title').innerText = data.rutina.nombre; 
+                document.getElementById('vr-desc').innerText = data.rutina.descripcion; 
+                currentRoutineExercises = data.ejercicios;
+                
+                let htmlList = '';
+                data.ejercicios.forEach(ex => {
+                    let icon = '<i class="fas fa-dumbbell text-secondary me-3"></i>';
+                    let estilo = '';
+                    let claseTexto = 'text-white';
+                    let accion = '';
+
+                    if (ex.video) {
+                        icon = '<i class="fas fa-play-circle text-primary me-3 fs-5"></i>';
+                        estilo = 'cursor: pointer;';
+                        claseTexto = 'text-primary fw-bold';
+                        accion = `onclick="abrirVideo('${ex.video}', '${ex.nombre}')"`;
+                    }
+
+                    htmlList += `<div class="d-flex align-items-center mb-2 bg-dark p-3 rounded border border-secondary" ${accion} style="${estilo}">${icon}<div class="${claseTexto} small">${ex.nombre}</div></div>`; 
+                });
+                document.getElementById('vr-exercises-list').innerHTML = htmlList;
+                
+                const footer = document.getElementById('vr-footer');
+                const btnIniciar = `<button class="btn btn-primary rounded-pill px-4 fw-bold" onclick="startRoutineFromModal()">Iniciar</button>`;
+                
+                if (esPropia) {
+                    // CAMBIO: Ahora llamamos a askDeleteRoutine() en lugar de eliminarRutinaPropia
+                    footer.innerHTML = `<div class="d-flex gap-2 w-100"><button class="btn btn-outline-danger" onclick="askDeleteRoutine(${rid})"><i class="fas fa-trash"></i></button><button class="btn btn-outline-warning" onclick="prepararEdicion(${rid}, '${data.rutina.nombre}')"><i class="fas fa-pen"></i></button><div class="ms-auto">${btnIniciar}</div></div>`;
+                } else {
+                    const iconFav = data.es_favorita ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+                    const classFav = data.es_favorita ? 'btn-danger' : 'btn-outline-danger';
+                    footer.innerHTML = `<div class="d-flex gap-2 w-100"><button class="btn ${classFav}" onclick="toggleFavorite()">${iconFav}</button><button class="btn btn-outline-light" onclick="copiarRutinaSistema()"><i class="fas fa-copy"></i></button><div class="ms-auto">${btnIniciar}</div></div>`;
+                }
+            } 
+        } catch(e) {} 
+    }
+
+    // --- NUEVA LÓGICA DE BORRADO UNIFICADO ---
+    
+    // 1. Pedir confirmación para HISTORIAL
+    window.askDelete = function(id) { 
+        pendingDeleteId = id; 
+        pendingDeleteType = 'history'; // Marcamos que es historial
+        new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show(); 
+    }
+
+    // 2. Pedir confirmación para RUTINA (Nueva función)
+    window.askDeleteRoutine = function(rid) {
+        pendingDeleteId = rid;
+        pendingDeleteType = 'routine'; // Marcamos que es rutina
+        new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+    }
+
+    // 3. Ejecutar el borrado (Discriminando qué borrar)
+    window.executeDelete = async function() { 
+        if(!pendingDeleteId) return; 
+
+        try {
+            if (pendingDeleteType === 'history') {
+                // Borrar Historial
+                const res = await fetch('api/eliminar_historial.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, id_historial: pendingDeleteId }) }); 
+                const data = await res.json(); 
+                if(data.ok) { 
+                    loadFullHistory(); 
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide(); 
+                } else { showAlert(data.msg); }
+            
+            } else if (pendingDeleteType === 'routine') {
+                // Borrar Rutina
+                const res = await fetch('api/eliminar_rutina.php', { method: 'POST', body: JSON.stringify({user_id: user.ID_Usuario, id_rutina: pendingDeleteId}) });
+                const data = await res.json();
+                if(data.ok) { 
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide(); 
+                    bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide();
+                    loadMyRoutines(); 
+                    showAlert("Rutina eliminada"); 
+                } else { showAlert(data.msg); }
+            }
+        } catch(e) { showAlert("Error conexión"); } 
+    }
+
+    function abrirEditorVacio() { editorExercises = []; document.getElementById('editor-routine-id').value = 0; document.getElementById('editor-routine-name').value = ''; renderEditorList(); new bootstrap.Modal(document.getElementById('routineEditorModal')).show(); }
+    
+    function copiarRutinaSistema() { 
+        bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide(); 
+        editorExercises = currentRoutineExercises.map(ex => ({ id: ex.ID_Ejercicio, nombre: ex.nombre })); 
+        document.getElementById('editor-routine-id').value = 0; 
+        document.getElementById('editor-routine-name').value = document.getElementById('vr-title').innerText + " (Copia)"; 
+        renderEditorList(); 
+        new bootstrap.Modal(document.getElementById('routineEditorModal')).show(); 
+    }
+    
+    function prepararEdicion(id, nombre) { 
+        bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide();
+        document.getElementById('editor-routine-id').value = id; 
+        document.getElementById('editor-routine-name').value = nombre; 
+        editorExercises = currentRoutineExercises.map(ex => ({ id: ex.ID_Ejercicio, nombre: ex.nombre })); 
+        renderEditorList(); 
+        new bootstrap.Modal(document.getElementById('routineEditorModal')).show(); 
+    }
+    
+    function renderEditorList() { const list = document.getElementById('editor-exercises-list'); list.innerHTML = ''; editorExercises.forEach((ex, i) => { list.innerHTML += `<div class="d-flex justify-content-between align-items-center bg-dark p-2 mb-2 rounded border border-secondary"><span class="text-white small">${ex.nombre}</span><button class="btn btn-sm text-danger" onclick="removeEditorEx(${i})"><i class="fas fa-times"></i></button></div>`; }); }
+    function addEditorEx() { const sel = document.getElementById('editor-select-add'); if(sel.value) { editorExercises.push({id: sel.value, nombre: sel.options[sel.selectedIndex].text}); renderEditorList(); sel.value=""; } }
+    function removeEditorEx(i) { editorExercises.splice(i, 1); renderEditorList(); }
+    async function guardarCambiosEditor() {
+        const nombre = document.getElementById('editor-routine-name').value;
+        if(!nombre || editorExercises.length===0) return showAlert("Completa nombre y ejercicios");
+        const pl = { user_id: user.ID_Usuario, id_rutina: document.getElementById('editor-routine-id').value, nombre: nombre, ejercicios: editorExercises.map(e=>e.id) };
+        try { const res = await fetch('api/guardar_rutina_usuario.php', { method:'POST', body: JSON.stringify(pl)}); const d = await res.json(); if(d.ok) { bootstrap.Modal.getInstance(document.getElementById('routineEditorModal')).hide(); loadMyRoutines(); showAlert(d.msg); } else { showAlert(d.msg); } } catch(e){ showAlert("Error al guardar"); }
+    }
+
+    function abrirModalGuardarRutina() { if(document.querySelectorAll('#exercises-list .exercise-card').length === 0) return showAlert("Agrega ejercicios primero."); document.getElementById('new-routine-name').value = ''; new bootstrap.Modal(document.getElementById('saveRoutineModal')).show(); }
+    async function guardarRutinaPersonalizada() {
+        const nombre = document.getElementById('new-routine-name').value;
+        const ids = []; document.querySelectorAll('#exercises-list .exercise-select').forEach(sel => { if(sel.value) ids.push(sel.value); });
+        if(!nombre || ids.length===0) return showAlert("Datos incompletos");
+        try { const res = await fetch('api/crear_rutina.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, nombre: nombre, ejercicios: ids }) }); const d = await res.json(); if(d.ok) { bootstrap.Modal.getInstance(document.getElementById('saveRoutineModal')).hide(); showAlert("Rutina creada"); loadMyRoutines(); } else { showAlert(d.msg); } } catch(e) { showAlert("Error al guardar"); }
+    }
+
+    // --- HISTORIAL ---
+    async function loadFullHistory() { 
+        const feed = document.getElementById('history-feed'); 
+        try { 
+            const res = await fetch(`api/obtener_historial.php?user_id=${user.ID_Usuario}&limit=100`); 
+            const data = await res.json(); 
+            if(data.ok && data.data.length > 0) { 
+                feed.innerHTML = ''; 
+                const grouped = {}; 
+                data.data.forEach(i => { if(!grouped[i.fecha]) grouped[i.fecha]=[]; grouped[i.fecha].push(i); }); 
+                
+                Object.keys(grouped).sort().reverse().forEach(dt => { 
+                    const exercises = grouped[dt]; 
+                    const dateParts = dt.split('-'); 
+                    const localDateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+                    const dStr = localDateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); 
+                    
+                    let exListHtml = ''; 
+                    exercises.forEach(ex => { exListHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #2a2a2a;"><div style="width:40%; font-weight:500; color:#ddd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ex.nombre_ejercicio}</div><div style="width:20%; text-align:center; color:#bbb; font-family:monospace;">${ex.series}</div><div style="width:20%; text-align:center; color:#bbb; font-family:monospace;">${ex.repeticiones}</div><div style="width:20%; text-align:center; color:#2D9CDB; font-weight:bold;">${parseFloat(ex.peso)}kg</div><div style="width:10%; text-align:right;"><button onclick="askDelete(${ex.ID_Historial})" class="btn btn-link btn-sm text-danger p-0"><i class="fas fa-trash-alt"></i></button></div></div>`; }); 
+                    
+                    feed.innerHTML += `<div class="hevy-card fade-in-up p-3"><div class="workout-header"><span class="workout-date">${dStr}</span><span class="workout-volume">${exercises.length} Series</span></div><div style="display:flex; font-size:0.65rem; color:#A0A0A5; font-weight:bold; letter-spacing:0.5px; padding-bottom:6px; border-bottom:1px solid #333; margin-bottom:4px;"><div style="width:40%; text-align:left;">EJERCICIO</div><div style="width:20%; text-align:center;">SERIES</div><div style="width:20%; text-align:center;">REPS</div><div style="width:20%; text-align:center;">KG</div><div style="width:10%;"></div></div><div>${exListHtml}</div></div>`; 
+                }); 
+            } else { feed.innerHTML = '<div class="text-center py-4 text-muted">Sin actividad.</div>'; } 
+        } catch(e) { feed.innerHTML = '<div class="text-center py-4 text-danger">Error al cargar historial.</div>'; } 
+    }
+
+    document.getElementById('workout-form').addEventListener('submit', async function(e) { e.preventDefault(); const items = []; document.querySelectorAll('.exercise-card').forEach(card => { const id = card.querySelector('.exercise-select').value; const w = card.querySelector('.weight-input').value; const r = card.querySelector('.reps-input').value; const s = card.querySelector('.sets-input').value; if(id && w && r && s) items.push({ id_ejercicio: id, series: s, reps: r, peso: w }); }); if(items.length === 0) return showAlert("Añade ejercicios"); try { const d = new Date(); const localDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); const res = await fetch('api/guardar_entrenamiento.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, ejercicios: items, fecha: localDate }) }); const data = await res.json(); if(data.ok) { showAlert("¡Guardado!"); document.getElementById('exercises-list').innerHTML = ''; addExerciseCard(); loadFullHistory(); switchTab('tab-history'); } else { showAlert(data.msg); } } catch(e) { showAlert("Error guardando"); } });
+
+    // --- PERFIL ---
+    window.openProfileModal = async function(){ 
+        new bootstrap.Modal(document.getElementById('profileModal')).show(); 
+        try {
+            const r = await fetch(`api/perfil.php?user_id=${user.ID_Usuario}`);
+            const d = await r.json();
+            if(d.ok){
+                const p=d.data; 
+                document.getElementById('modal-name').innerText=p.nombre_completo; 
+                document.getElementById('modal-email').innerText=p.email; 
+                document.getElementById('modal-days').innerText=p.dias_entrenados; 
+                document.getElementById('modal-age').innerText=p.edad; 
+                document.getElementById('modal-weight').innerText=p.peso; 
+                document.getElementById('modal-height').innerText=p.altura; 
+                document.getElementById('modal-class-badge').innerText = p.nombre_clase || 'Sin Clase'; 
+                
+                window.currentUserProfile=p; 
+                renderizarFotoEnModal(p.foto);
+                updateNavbarAvatar(p.foto);
+            }
+        } catch(e){} 
+    }
+
+    async function subirFotoPerfil(input) {
+        if (input.files && input.files[0]) {
+            const formData = new FormData();
+            formData.append('foto', input.files[0]);
+            formData.append('user_id', user.ID_Usuario);
+
+            document.getElementById('modal-name').innerText = "Subiendo...";
+
+            try {
+                const res = await fetch('api/subir_foto_perfil.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                if(data.ok) {
+                    user.foto = data.nueva_foto;
+                    localStorage.setItem('gymtrack_user', JSON.stringify(user));
+                    
+                    renderizarFotoEnModal(data.nueva_foto);
+                    updateNavbarAvatar(data.nueva_foto);
+                    document.getElementById('modal-name').innerText = user.nombre + " " + user.apellido;
+                } else {
+                    showAlert(data.msg);
+                }
+            } catch(e) { showAlert("Error al subir imagen"); }
+        }
+    }
+
+    window.openEditProfileModal = async function(){ bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide(); if(window.currentUserProfile){ document.getElementById('edit-nombre').value=window.currentUserProfile.nombre; document.getElementById('edit-apellido').value=window.currentUserProfile.apellido; document.getElementById('edit-peso').value=window.currentUserProfile.peso; document.getElementById('edit-altura').value=window.currentUserProfile.altura; } const sel = document.getElementById('edit-clase'); sel.innerHTML = '<option>Cargando...</option>'; try { const r = await fetch('api/obtener_clases.php'); const d = await r.json(); if(d.ok) { sel.innerHTML = ''; d.data.forEach(c => { const opt = document.createElement('option'); opt.value = c.ID_Clase; opt.text = c.nombre; if(window.currentUserProfile && c.ID_Clase == window.currentUserProfile.id_clase) { opt.selected = true; } sel.appendChild(opt); }); } } catch(e) {} new bootstrap.Modal(document.getElementById('editProfileModal')).show(); }
+    document.getElementById('edit-profile-form').addEventListener('submit',async function(e){ e.preventDefault(); const pl={ user_id:user.ID_Usuario, nombre:document.getElementById('edit-nombre').value, apellido:document.getElementById('edit-apellido').value, peso:document.getElementById('edit-peso').value, altura:document.getElementById('edit-altura').value, id_clase:document.getElementById('edit-clase').value }; try{const r=await fetch('api/perfil.php',{method:'POST',body:JSON.stringify(pl)});const d=await r.json();if(d.ok){user=d.user; localStorage.setItem('gymtrack_user',JSON.stringify(user)); document.getElementById('user-name-display').innerText=user.nombre; bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide(); openProfileModal(); loadExploreRoutines(); showAlert("Perfil Actualizado"); }else showAlert(d.msg);}catch(e){} });
+
+    // --- OTROS ---
+    window.startRoutineFromModal = function() { if(!currentRoutineExercises || currentRoutineExercises.length === 0) return showAlert("Rutina vacía."); const container = document.getElementById('exercises-list'); container.innerHTML = ''; currentRoutineExercises.forEach(ex => { const tpl = document.getElementById('exercise-template').content.cloneNode(true); const sel = tpl.querySelector('.exercise-select'); allExercises.forEach(opt => { const option = document.createElement('option'); option.value = opt.ID_Ejercicio; option.text = opt.nombre; if(opt.ID_Ejercicio == ex.ID_Ejercicio) option.selected = true; sel.appendChild(option); }); tpl.querySelector('.remove-card').addEventListener('click', e => e.target.closest('.exercise-card').remove()); container.appendChild(tpl); }); bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide(); switchTab('tab-logger'); }
+    window.toggleFavorite = async function() { if(!currentRoutineId) return; try { await fetch('api/toggle_favorito.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, rutina_id: currentRoutineId }) }); loadMyRoutines(); bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide(); } catch(e) {} }
+    window.switchTab = function(t,b){document.querySelectorAll('.section-content').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');if(b){document.querySelectorAll('.nav-item-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');} if(t==='tab-my-routines')loadMyRoutines();}
+    window.logout = function(){localStorage.removeItem('gymtrack_user');safeRedirect('login.html');}
+    async function cargarClasesDisponibles(sexo) { const sel = document.getElementById('ob-clase'); sel.innerHTML='<option>Cargando...</option>'; sel.disabled=true; try{const r=await fetch(`api/obtener_clases.php?sexo=${sexo}`);const d=await r.json();if(d.ok){sel.innerHTML='<option value="" selected disabled>Elige...</option>';d.data.forEach(c=>{sel.innerHTML+=`<option value="${c.ID_Clase}">${c.nombre}</option>`});sel.disabled=false;}else sel.innerHTML='<option>Error</option>';}catch(e){} }
+    
+    // --- ONBOARDING FORM ---
+    document.getElementById('onboarding-form').addEventListener('submit', async function(e){ e.preventDefault(); const pl={user_id:user.ID_Usuario,nombre:user.nombre,apellido:user.apellido,telefono:document.getElementById('ob-telefono').value,sexo:document.getElementById('ob-sexo').value,peso:document.getElementById('ob-peso').value,altura:document.getElementById('ob-altura').value,id_clase:document.getElementById('ob-clase').value}; try{const r=await fetch('api/perfil.php',{method:'POST',body:JSON.stringify(pl)});const d=await r.json();if(d.ok){user=d.user;localStorage.setItem('gymtrack_user',JSON.stringify(user));bootstrap.Modal.getInstance(document.getElementById('completeProfileModal')).hide();showAlert("¡Listo!");loadExploreRoutines();}else showAlert(d.msg);}catch(e){} });
+
+    // --- LÓGICA DE CALCULADORA NUTRICIONAL (Integrada) ---
+    
+    window.openCalcModal = function() { new bootstrap.Modal(document.getElementById('calcModal')).show(); }
+    window.setGoal = function(goal, element) { selectedGoal = goal; document.querySelectorAll('.goal-option').forEach(el => el.classList.remove('active')); element.classList.add('active'); }
+    window.calcularNutricion = function() {
+        const peso = parseFloat(document.getElementById('nut-peso').value);
+        const altura = parseFloat(document.getElementById('nut-altura').value);
+        const edad = parseFloat(document.getElementById('nut-edad').value);
+        const sexo = document.getElementById('nut-sexo').value;
+        const actividad = parseFloat(document.getElementById('nut-actividad').value);
+        if (!peso || !altura || !edad) { return showAlert("Por favor completa todos los campos (Peso, Altura, Edad)."); }
+        let tmb = 0;
+        if (sexo === 'M') { tmb = 66.5 + (13.75 * peso) + (5.003 * altura) - (6.755 * edad); } else { tmb = 655.1 + (9.563 * peso) + (1.850 * altura) - (4.676 * edad); }
+        let tdee = tmb * actividad;
+        if (selectedGoal === 'deficit') { tdee -= 400; } else if (selectedGoal === 'volumen') { tdee += 400; }
+        const finalKcals = Math.round(tdee);
+        let proteGram = Math.round(peso * 2.0); let fatGram = Math.round(peso * 1.0);
+        let calsOccupied = (proteGram * 4) + (fatGram * 9); let calsRemaining = finalKcals - calsOccupied;
+        if (calsRemaining < 0) calsRemaining = 0; let carbGram = Math.round(calsRemaining / 4);
+        document.getElementById('res-kcals').innerText = finalKcals; document.getElementById('res-prot').innerText = proteGram + "g"; document.getElementById('res-fat').innerText = fatGram + "g"; document.getElementById('res-carb').innerText = carbGram + "g";
+        document.getElementById('calc-step-1').classList.add('d-none'); document.getElementById('calc-step-2').classList.remove('d-none'); document.getElementById('calc-step-2').classList.add('fade-in-up');
+    }
+    window.resetCalc = function() { document.getElementById('calc-step-2').classList.add('d-none'); document.getElementById('calc-step-1').classList.remove('d-none'); }
+  </script>
+</body>
+</html>
