@@ -24,9 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Solo usuarios con sesion: evita gastar credito de OpenAI desde afuera y que se guarden rutinas a nombre de otros.
+// El usuario es el de la sesion del servidor; el user_id que mande el cliente se ignora.
+require_once __DIR__ . '/sesion.php';
+gt_iniciar_sesion();
+$userId        = gt_usuario_id();
+
 $input         = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $mensaje       = trim($input['mensaje'] ?? '');
-$userId        = $input['user_id'] ?? null;
 $historialChat = $input['historial'] ?? [];
 
 if (empty($mensaje)) {

@@ -2,11 +2,14 @@
 // api/guardar_entrenamiento.php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
+require_once 'sesion.php';
+gt_iniciar_sesion();
 require_once 'conexion.php';
 
 $in = json_decode(file_get_contents('php://input'), true);
 
-$uid = $in['user_id'] ?? null;
+// El usuario es el de la sesion del servidor; el user_id que mande el cliente se ignora.
+$uid = gt_usuario_id();
 $items = $in['ejercicios'] ?? []; 
 $fechaCliente = $in['fecha'] ?? date('Y-m-d'); // Recibimos la fecha del cliente
 

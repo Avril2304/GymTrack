@@ -62,6 +62,41 @@ $method = $_SERVER['REQUEST_METHOD'];
 $uri = preg_replace('#^.*/api#', '', $uri);
 if (empty($uri)) $uri = '/';
 
+// ---------------------------------------------------------------------------
+// BARRERA DE SESION (defensa central)
+// La identidad sale SIEMPRE de la sesion del servidor. Las rutas con datos de usuario exigen
+// sesion y se les pisa cualquier user_id que mande el cliente, asi nadie puede leer ni escribir
+// a nombre de otro aunque el controlador todavia lea el id del request.
+// Publicas (sin sesion): login, registro y catalogos. Admin y gimnasios validan sesion y permisos
+// por su cuenta (ver AdminController, GimnasioController y SolicitudController).
+// ---------------------------------------------------------------------------
+require_once dirname(__DIR__, 2) . '/public_html/api/sesion.php';
+gt_iniciar_sesion();
+
+$rutasPublicas = [
+    '/', '/login', '/login.php', '/register', '/register.php',
+    '/clases', '/clases.php', '/obtener_clases.php',
+    '/ejercicios', '/ejercicios.php', '/obtener_ejercicios.php',
+];
+$rutasConControlPropio = [
+    '/admin_usuarios.php', '/obtener_usuarios.php', '/admin_dashboard.php', '/dashboard.php',
+    '/asignar_gimnasio.php', '/obtener_gimnasios.php', '/crear_gimnasio.php', '/mi_gimnasio.php',
+    '/buscar_gimnasio.php', '/salir_gimnasio.php', '/crear_solicitud.php', '/mi_solicitud.php',
+    '/cancelar_solicitud.php', '/solicitudes_pendientes.php', '/resolver_solicitud.php', '/buscar_usuario.php',
+];
+$tieneControlPropio = in_array($uri, $rutasConControlPropio, true)
+    || strpos($uri, '/admin/') === 0 || strpos($uri, '/gimnasio/') === 0 || strpos($uri, '/solicitudes/') === 0;
+
+if (!in_array($uri, $rutasPublicas, true) && !$tieneControlPropio) {
+    $sesionUid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+    if ($sesionUid <= 0) {
+        response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+    }
+    foreach (['user_id', 'ID_Usuario'] as $clave) {
+        $_GET[$clave] = $_POST[$clave] = $_REQUEST[$clave] = $sesionUid;
+    }
+}
+
 // Enrutador de peticiones hacia Controladores (soporta nombres REST y nombres legacy .php)
 switch ($uri) {
     case '/login':

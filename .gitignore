@@ -54,3 +54,6 @@ index (1).html
 public_html/uploads/*
 public_html/img/usuarios/*
 !public_html/img/usuarios/default.jpg
+
+# Sesiones de PHP del servidor (carpeta propia, junto a public_html y backend)
+sessions/

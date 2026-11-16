@@ -27,7 +27,8 @@ class CoachController
         }
 
         $mensaje = trim($input['mensaje'] ?? '');
-        $userId = $input['user_id'] ?? null;
+        // El usuario es el de la sesion del servidor (el router ya exigio sesion); el user_id del cliente se ignora.
+        $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
         $historialChat = $input['historial'] ?? [];
 
         if (empty($mensaje)) {

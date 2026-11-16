@@ -9,11 +9,26 @@ if (__FILE__ === $_SERVER['SCRIPT_FILENAME']) {
     exit;
 }
 
+define('GT_SESION_SEGUNDOS', 12 * 3600); // duracion de la sesion: una jornada completa de gimnasio
+
 function gt_iniciar_sesion() {
     if (session_status() === PHP_SESSION_NONE) {
+        // Carpeta de sesiones PROPIA, fuera de la web (junto a public_html y backend). En un hosting
+        // compartido, otras aplicaciones (p. ej. WordPress) limpian las sesiones del directorio comun
+        // a los ~24 minutos y alguien que entrena una hora perderia la sesion antes de guardar.
+        // Si no se puede crear o escribir, se sigue con el directorio por defecto.
+        $dir = dirname(__DIR__, 2) . '/sessions';
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0700, true);
+        }
+        if (is_dir($dir) && is_writable($dir)) {
+            session_save_path($dir);
+        }
+        ini_set('session.gc_maxlifetime', (string) GT_SESION_SEGUNDOS);
+
         $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
         session_set_cookie_params([
-            'lifetime' => 0,
+            'lifetime' => GT_SESION_SEGUNDOS,
             'path'     => '/',
             'secure'   => $https,
             'httponly' => true,
