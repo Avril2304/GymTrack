@@ -44,7 +44,7 @@ if ($destino !== null && $destino !== $miGym) {
 try {
     // 3. Lectura bloqueada del usuario destino para decidir sin carreras.
     $pdo->beginTransaction();
-    $stmt = $pdo->prepare("SELECT ID_Gimnasio FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
+    $stmt = $pdo->prepare("SELECT ID_Gimnasio, es_admin FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
     $stmt->execute([$userId]);
     $target = $stmt->fetch();
 
@@ -54,6 +54,10 @@ try {
             $pdo->rollBack();
             gt_error(404, 'El usuario indicado no existe.');
         }
+        if (($target['es_admin'] ?? 'N') === 'S') {
+            $pdo->rollBack();
+            gt_error(409, 'No se puede asignar a un administrador como socio.');
+        }
         $actual = $target['ID_Gimnasio'] !== null ? (int) $target['ID_Gimnasio'] : null;
         if ($actual !== null && $actual !== $miGym) {
             $pdo->rollBack();
@@ -61,6 +65,8 @@ try {
         }
         if ($actual === null) {
             $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = ? WHERE ID_Usuario = ?")->execute([$miGym, $userId]);
+            // Si tenia una solicitud pendiente (a este u otro gimnasio), queda sin efecto.
+            $pdo->prepare("UPDATE Solicitud SET estado = 'cancelada', fecha_resolucion = NOW() WHERE ID_Usuario = ? AND estado = 'pendiente'")->execute([$userId]);
         }
     } else {
         // DESVINCULAR: solo socios de mi gimnasio. Mismo error si no existe o es de otro gimnasio,

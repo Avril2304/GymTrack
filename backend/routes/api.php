@@ -9,6 +9,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CoachController;
 use App\Http\Controllers\GimnasioController;
+use App\Http\Controllers\SolicitudController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +49,18 @@ Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
 // Rutas de Gimnasio
 Route::post('/admin/asignar-gimnasio', [GimnasioController::class, 'asignarGimnasio']);
 Route::get('/admin/gimnasios', [GimnasioController::class, 'listar']);
+
+// Rutas de Gimnasio propio y alta de socios (crear/buscar gimnasio, solicitudes de ingreso)
+Route::post('/gimnasio/crear', [SolicitudController::class, 'crearGimnasio']);
+Route::get('/gimnasio/mio', [SolicitudController::class, 'miGimnasio']);
+Route::get('/gimnasio/buscar', [SolicitudController::class, 'buscarGimnasio']);
+Route::post('/gimnasio/salir', [SolicitudController::class, 'salirGimnasio']);
+Route::post('/solicitudes/crear', [SolicitudController::class, 'crear']);
+Route::get('/solicitudes/mia', [SolicitudController::class, 'mia']);
+Route::post('/solicitudes/cancelar', [SolicitudController::class, 'cancelar']);
+Route::get('/solicitudes/pendientes', [SolicitudController::class, 'pendientes']);
+Route::post('/solicitudes/resolver', [SolicitudController::class, 'resolver']);
+Route::get('/admin/buscar-usuario', [SolicitudController::class, 'buscarUsuario']);
 
 // Ruta de Coach IA Virtual (OpenAI)
 Route::post('/coach/chat', [CoachController::class, 'chat']);

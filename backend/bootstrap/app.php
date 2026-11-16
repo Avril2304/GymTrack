@@ -178,6 +178,57 @@ switch ($uri) {
         (new App\Http\Controllers\GimnasioController)->listar();
         break;
 
+    // Gimnasio propio y alta de socios (reglas compartidas en public_html/api/gimnasio_lib.php)
+    case '/gimnasio/crear':
+    case '/crear_gimnasio.php':
+        (new App\Http\Controllers\SolicitudController)->crearGimnasio(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/gimnasio/mio':
+    case '/mi_gimnasio.php':
+        (new App\Http\Controllers\SolicitudController)->miGimnasio();
+        break;
+
+    case '/gimnasio/buscar':
+    case '/buscar_gimnasio.php':
+        (new App\Http\Controllers\SolicitudController)->buscarGimnasio(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/gimnasio/salir':
+    case '/salir_gimnasio.php':
+        (new App\Http\Controllers\SolicitudController)->salirGimnasio();
+        break;
+
+    case '/solicitudes/crear':
+    case '/crear_solicitud.php':
+        (new App\Http\Controllers\SolicitudController)->crear(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/solicitudes/mia':
+    case '/mi_solicitud.php':
+        (new App\Http\Controllers\SolicitudController)->mia();
+        break;
+
+    case '/solicitudes/cancelar':
+    case '/cancelar_solicitud.php':
+        (new App\Http\Controllers\SolicitudController)->cancelar();
+        break;
+
+    case '/solicitudes/pendientes':
+    case '/solicitudes_pendientes.php':
+        (new App\Http\Controllers\SolicitudController)->pendientes();
+        break;
+
+    case '/solicitudes/resolver':
+    case '/resolver_solicitud.php':
+        (new App\Http\Controllers\SolicitudController)->resolver(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/admin/buscar-usuario':
+    case '/buscar_usuario.php':
+        (new App\Http\Controllers\SolicitudController)->buscarUsuario(new Illuminate\Http\Request($_REQUEST));
+        break;
+
     case '/coach/chat':
     case '/coach-chat':
     case '/coach_chat.php':

@@ -18,6 +18,11 @@ class GimnasioController
      */
     public function asignarGimnasio(Request $request)
     {
+        // Modifica datos: solo POST (un GET se podría disparar desde un link ajeno con la cookie de sesión).
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            return response()->json(['ok' => false, 'msg' => 'Método no permitido.'], 405);
+        }
+
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -64,7 +69,7 @@ class GimnasioController
 
         try {
             $pdo->beginTransaction();
-            $stmt = $pdo->prepare("SELECT ID_Gimnasio FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
+            $stmt = $pdo->prepare("SELECT ID_Gimnasio, es_admin FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
             $stmt->execute([$userId]);
             $fila = $stmt->fetch(\PDO::FETCH_ASSOC);
             $actual = ($fila && $fila['ID_Gimnasio'] !== null) ? (int) $fila['ID_Gimnasio'] : null;
@@ -75,12 +80,18 @@ class GimnasioController
                     $pdo->rollBack();
                     return response()->json(['ok' => false, 'msg' => 'El usuario indicado no existe.'], 404);
                 }
+                if (($fila['es_admin'] ?? 'N') === 'S') {
+                    $pdo->rollBack();
+                    return response()->json(['ok' => false, 'msg' => 'No se puede asignar a un administrador como socio.'], 409);
+                }
                 if ($actual !== null && $actual !== $miGym) {
                     $pdo->rollBack();
                     return response()->json(['ok' => false, 'msg' => 'Ese usuario ya pertenece a otro gimnasio.'], 409);
                 }
                 if ($actual === null) {
                     $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = ? WHERE ID_Usuario = ?")->execute([$miGym, $userId]);
+                    // Si tenia una solicitud pendiente (a este u otro gimnasio), queda sin efecto.
+                    $pdo->prepare("UPDATE Solicitud SET estado = 'cancelada', fecha_resolucion = NOW() WHERE ID_Usuario = ? AND estado = 'pendiente'")->execute([$userId]);
                 }
             } else {
                 // DESVINCULAR: solo socios de mi gimnasio. Mismo error si no existe o es de otro gimnasio.

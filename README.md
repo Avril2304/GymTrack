@@ -29,6 +29,40 @@ La estructura del repo replica la del hosting (cPanel):
 
 **Al desplegar:** estos archivos reales no estan en Git, asi que subir el codigo no los pisa, pero tienen que existir en el servidor. En particular `db_config.php` y `backend/.env` son obligatorios con esta version: ya no hay credenciales escritas en el codigo.
 
+### Migraciones
+
+Despues de importar el dump, correr en orden los archivos de `migrations/` (son idempotentes: se pueden repetir, y en una base que ya tiene los cambios no hacen nada):
+
+| Archivo | Que hace |
+| --- | --- |
+| `05_gimnasio.sql` | Tabla `Gimnasio` y columna `Usuario.ID_Gimnasio` (con indices y claves foraneas) |
+| `06_gimnasio_identificador.sql` | `Gimnasio.identificador` unico y un admin = un gimnasio (`UNIQUE` sobre el duenio) |
+| `07_solicitud.sql` | Tabla `Solicitud` (pendiente / aceptada / rechazada / cancelada) |
+
+**Orden de despliegue:** primero las migraciones, despues el codigo. `asignar_gimnasio` y el circuito de solicitudes dependen de la tabla `Solicitud`. Las migraciones 01 a 04 (asistencia) no estan en este repo.
+
+## Gimnasios y alta de socios
+
+Un admin es duenio de **un** gimnasio; un socio pertenece a **uno** o a ninguno (`Usuario.ID_Gimnasio` nulo = independiente). El admin solo ve y administra a los socios de su gimnasio. Un admin sin gimnasio no ve datos de nadie hasta que crea el suyo.
+
+Todos los endpoints identifican a quien llama por la **sesion del servidor** (`api/sesion.php`); ningun id que mande el cliente se usa para decidir permisos. Las reglas viven en `api/gimnasio_lib.php` y las comparten los endpoints PHP y los controladores de `backend/`.
+
+| Quien | Endpoint (`api/`) | Metodo | Que hace |
+| --- | --- | --- | --- |
+| Admin | `crear_gimnasio.php` | POST | Crea su gimnasio (uno solo); el identificador sale del nombre si no se indica |
+| Admin | `mi_gimnasio.php` | GET | Datos de su gimnasio, identificador para compartir y contadores |
+| Admin | `solicitudes_pendientes.php` | GET | Solicitudes pendientes de su gimnasio |
+| Admin | `resolver_solicitud.php` | POST | Aprueba o rechaza (`id_solicitud`, `accion`) |
+| Admin | `buscar_usuario.php` | GET | Busca a una persona por mail exacto para sumarla directo |
+| Admin | `asignar_gimnasio.php` | POST | Suma un usuario libre a su gimnasio, o saca a un socio suyo |
+| Socio | `buscar_gimnasio.php` | GET | Encuentra un gimnasio por identificador exacto (sin listado ni busqueda parcial) |
+| Socio | `crear_solicitud.php` | POST | Pide unirse (`identificador`) |
+| Socio | `mi_solicitud.php` | GET | Su gimnasio actual y su ultima solicitud |
+| Socio | `cancelar_solicitud.php` | POST | Cancela su solicitud pendiente |
+| Socio | `salir_gimnasio.php` | POST | Sale de su gimnasio |
+
+Reglas del alta: una sola solicitud pendiente por usuario; quien ya tiene gimnasio no puede pedir otro (primero sale); los administradores no se unen como socios; tras un rechazo hay una espera de 7 dias para volver a pedir a ese mismo gimnasio (`GT_COOLDOWN_DIAS`); la busqueda de gimnasios y de usuarios tiene un limite de intentos por minuto. Las operaciones que modifican datos solo aceptan POST.
+
 ### Usuarios de prueba
 
 El dump `gymtrack_tasty (2).sql` incluye 3 usuarios de demostracion (los datos reales de usuarios se sanitizaron antes de subir el repo):
