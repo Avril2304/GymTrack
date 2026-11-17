@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>GymTrack - Estadísticas</title>
+
+  <link rel="icon" type="image/png" href="img/favicon.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+        --bg-app: #121212;
+        --bg-card: #1c1c1e;
+        --bg-input: #2c2c2e;
+        --primary: #0d6efd;
+        --text-main: #FFFFFF;
+        --text-sec: #A0A0A5;
+        --danger: #dc3545;
+    }
+
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-app); color: var(--text-main); padding-bottom: 40px; }
+
+    .navbar-custom { background-color: var(--bg-card); border-bottom: 1px solid #333; padding: 12px 20px; }
+
+    .hevy-card { background-color: var(--bg-card); border-radius: 12px; padding: 16px; border: 1px solid #2a2a2a; }
+
+    /* TARJETAS DE NÚMEROS (estilo "small-box" de AdminLTE, adaptado al tema oscuro) */
+    .stat-card {
+        background-color: var(--bg-card);
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        padding: 20px;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card .stat-icon {
+        position: absolute;
+        right: 16px;
+        top: 16px;
+        font-size: 2rem;
+        opacity: 0.15;
+    }
+    .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-main); line-height: 1.1; }
+    .stat-card .stat-label { color: var(--text-sec); font-size: 0.85rem; margin-top: 4px; }
+    .stat-card .stat-trend { font-size: 0.8rem; margin-top: 8px; }
+    .stat-trend.up { color: #16a765; }
+    .stat-trend.down { color: var(--danger); }
+    .stat-trend.neutral { color: var(--text-sec); }
+
+    .chart-card { background-color: var(--bg-card); border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .chart-card h6 { color: var(--text-sec); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; margin-bottom: 16px; }
+    .chart-wrap { position: relative; height: 280px; }
+
+    .loading-placeholder { color: var(--text-sec); text-align: center; padding: 40px 0; }
+  </style>
+</head>
+<body>
+
+  <script>
+    const session = localStorage.getItem('gymtrack_user');
+    if (!session) { window.location.href = 'login.html'; }
+    else {
+        const u = JSON.parse(session);
+        if (u.es_admin !== 'S') { window.location.href = 'index.html'; }
+    }
+  </script>
+
+  <div class="navbar-custom d-flex justify-content-between align-items-center sticky-top mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-chart-line text-primary fs-4"></i>
+        <span class="fw-bold fs-5">Estadísticas</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="admin.html" class="btn btn-sm btn-outline-light rounded-pill">
+            <i class="fas fa-users me-1"></i> Usuarios
+        </a>
+        <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="logout()">
+            <i class="fas fa-sign-out-alt me-1"></i> Salir
+        </button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Dashboard</h2>
+        <p class="text-secondary small mb-0">Monitoreo general del funcionamiento del sistema.</p>
+    </div>
+
+    <!-- NÚMEROS -->
+    <div class="row g-3 mb-4" id="stats-row">
+        <div class="col-12 loading-placeholder"><i class="fas fa-circle-notch fa-spin"></i> Cargando estadísticas...</div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h6><i class="fas fa-dumbbell me-1"></i> Tipos de actividad usados</h6>
+                <div class="chart-wrap"><canvas id="chartActividades"></canvas></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h6><i class="fas fa-calendar-week me-1"></i> Asistencia por día de la semana</h6>
+                <div class="chart-wrap"><canvas id="chartDias"></canvas></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h6><i class="fas fa-clock me-1"></i> Turno mañana vs. tarde</h6>
+                <div class="chart-wrap"><canvas id="chartTurnos"></canvas></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h6><i class="fas fa-ranking-star me-1"></i> Top 10 ejercicios más usados</h6>
+                <div class="chart-wrap"><canvas id="chartTop"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+
+  <script>
+    const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const COLORS = ['#0d6efd', '#16a765', '#fad165', '#dc3545', '#a479e2', '#43d692', '#4a86e8', '#f691b3', '#efa093', '#89d3b2'];
+
+    Chart.defaults.color = '#A0A0A5';
+    Chart.defaults.borderColor = '#2a2a2a';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const userStr = localStorage.getItem('gymtrack_user');
+            const currentUser = userStr ? JSON.parse(userStr) : null;
+            const adminParam = (currentUser && currentUser.ID_Usuario) ? `?admin_id=${currentUser.ID_Usuario}` : '';
+            const res = await fetch(`api/dashboard.php${adminParam}`);
+            const data = await res.json();
+
+            if (!data.ok) {
+                document.getElementById('stats-row').innerHTML =
+                    `<div class="col-12 text-center text-danger">${data.msg}</div>`;
+                return;
+            }
+
+            renderStats(data.numeros);
+            renderCharts(data.graficos);
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('stats-row').innerHTML =
+                `<div class="col-12 text-center text-danger">Error de conexión con el servidor.</div>`;
+        }
+    });
+
+    function renderStats(n) {
+        const cards = [
+            {
+                icon: 'fa-user-check',
+                value: n.porcentaje_activos + '%',
+                label: 'Socios activos (últ. 7 días)'
+            },
+            {
+                icon: 'fa-calendar-day',
+                value: n.promedio_por_dia,
+                label: 'Asistencias promedio / día'
+            },
+            {
+                icon: 'fa-user-plus',
+                value: n.porcentaje_nuevos_vs_mes === null ? 'S/D' : (n.porcentaje_nuevos_vs_mes >= 0 ? '+' : '') + n.porcentaje_nuevos_vs_mes + '%',
+                label: 'Socios nuevos vs. mes anterior',
+                trendClass: n.porcentaje_nuevos_vs_mes === null ? 'neutral' : (n.porcentaje_nuevos_vs_mes >= 0 ? 'up' : 'down'),
+                trendIcon: n.porcentaje_nuevos_vs_mes === null ? 'fa-minus' : (n.porcentaje_nuevos_vs_mes >= 0 ? 'fa-arrow-up' : 'fa-arrow-down')
+            },
+            {
+                icon: 'fa-list-check',
+                value: n.porcentaje_ejercicios_usados + '%',
+                label: 'Del catálogo de ejercicios se usa'
+            }
+        ];
+
+        const container = document.getElementById('stats-row');
+        container.innerHTML = '';
+        cards.forEach(c => {
+            const col = document.createElement('div');
+            col.className = 'col-6 col-lg-3';
+            col.innerHTML = `
+                <div class="stat-card">
+                    <i class="fas ${c.icon} stat-icon"></i>
+                    <div class="stat-value">${c.value}</div>
+                    <div class="stat-label">${c.label}</div>
+                    ${c.trendClass ? `<div class="stat-trend ${c.trendClass}"><i class="fas ${c.trendIcon} me-1"></i>vs. mes anterior</div>` : ''}
+                </div>
+            `;
+            container.appendChild(col);
+        });
+    }
+
+    function renderCharts(g) {
+        // 1. Actividades (torta)
+        new Chart(document.getElementById('chartActividades'), {
+            type: 'doughnut',
+            data: {
+                labels: g.actividades.map(a => a.actividad),
+                datasets: [{ data: g.actividades.map(a => a.cantidad), backgroundColor: COLORS, borderColor: '#1c1c1e', borderWidth: 2 }]
+            },
+            options: { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }, maintainAspectRatio: false }
+        });
+
+        // 2. Días de la semana (barras)
+        const diasData = new Array(7).fill(0);
+        g.dias_semana.forEach(d => { diasData[d.orden - 1] = d.asistencias; });
+        new Chart(document.getElementById('chartDias'), {
+            type: 'bar',
+            data: {
+                labels: DIAS,
+                datasets: [{ label: 'Asistencias', data: diasData, backgroundColor: '#0d6efd', borderRadius: 6 }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, maintainAspectRatio: false }
+        });
+
+        // 3. Turnos (torta)
+        new Chart(document.getElementById('chartTurnos'), {
+            type: 'pie',
+            data: {
+                labels: g.turnos.map(t => t.turno),
+                datasets: [{ data: g.turnos.map(t => t.cantidad), backgroundColor: ['#fad165', '#a479e2'], borderColor: '#1c1c1e', borderWidth: 2 }]
+            },
+            options: { plugins: { legend: { position: 'right' } }, maintainAspectRatio: false }
+        });
+
+        // 4. Top ejercicios (barras horizontales)
+        new Chart(document.getElementById('chartTop'), {
+            type: 'bar',
+            data: {
+                labels: g.top_ejercicios.map(e => e.nombre),
+                datasets: [{ label: 'Usos', data: g.top_ejercicios.map(e => e.usos), backgroundColor: '#16a765', borderRadius: 6 }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem('gymtrack_user');
+        window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

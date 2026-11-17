@@ -1,7 +1,17 @@
-# Configuracion local con credenciales
-api/config.php
+# Configuracion local con credenciales (usar los *.example.php / .env.example como plantilla)
+public_html/api/config.php
+public_html/api/mail_config.php
+public_html/api/db_config.php
+backend/.env
 .env
 .env.*
+!.env.example
+!backend/.env.example
+
+# Logs y archivos generados por el servidor
+error_log
+*.log
+public_html/gifs-api/
 
 # Archivos generados por sistema/editor
 .DS_Store
@@ -14,7 +24,6 @@ desktop.ini
 # Dependencias y cache
 node_modules/
 vendor/
-*.log
 cache/
 tmp/
 temp/
@@ -33,11 +42,18 @@ temp/
 *.pdf
 Documento A4 Portada de Proyecto Creativo Retro Azul y Blanco.jpg
 
+# Contexto interno con credenciales
+PROJECT_CONTEXT.md
+
 # Duplicados/importaciones viejas
 VIDEOS EJERCICIOS/
 HTML/
 index (1).html
 
 # Subidas de usuarios reales
-img/usuarios/*
-!img/usuarios/default.jpg
+public_html/uploads/*
+public_html/img/usuarios/*
+!public_html/img/usuarios/default.jpg
+
+# Sesiones de PHP del servidor (carpeta propia, junto a public_html y backend)
+sessions/
