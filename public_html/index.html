@@ -938,7 +938,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="profileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-content-hevy"><div class="modal-header"><h5 class="modal-title fw-bold text-white">Mi Perfil</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div class="position-relative d-inline-block mb-3" style="cursor: pointer;" onclick="document.getElementById('input-foto-perfil').click()"><img id="modal-img-real" src="" class="rounded-circle d-none" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--primary);"><div id="modal-avatar-initial" class="d-inline-flex justify-content-center align-items-center bg-primary text-white rounded-circle fw-bold" style="width: 80px; height: 80px; font-size: 2rem;">U</div><div class="position-absolute bottom-0 end-0 bg-dark rounded-circle p-1 border border-secondary" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-camera text-white" style="font-size: 0.7rem;"></i></div></div><input type="file" id="input-foto-perfil" accept="image/*" style="display: none;" onchange="subirFotoPerfil(this)"><h4 class="fw-bold mb-1 text-white" id="modal-name">User</h4><p class="text-secondary small mb-4" id="modal-email">...</p><div class="badge bg-secondary mb-4 p-2 px-3 rounded-pill" id="modal-class-badge" style="font-size: 0.9rem;">Sin Clase</div><div class="row g-2 mb-4"><div class="col-6"><div class="stat-box"><div class="stat-value text-primary" id="modal-days">0</div><div class="stat-label">Días</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-age">--</div><div class="stat-label">Edad</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-weight">--</div><div class="stat-label">Peso</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-height">--</div><div class="stat-label">Altura</div></div></div></div></div><div class="modal-footer flex-column gap-2"><button class="btn btn-outline-light w-100 rounded-pill fw-bold" onclick="openEditProfileModal()">Editar Perfil</button><button class="btn btn-outline-danger w-100 rounded-pill fw-bold" onclick="logout()">Cerrar Sesión</button></div></div></div></div>
+  <div class="modal fade" id="profileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content modal-content-hevy"><div class="modal-header"><h5 class="modal-title fw-bold text-white">Mi Perfil</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div class="position-relative d-inline-block mb-3" style="cursor: pointer;" onclick="document.getElementById('input-foto-perfil').click()"><img id="modal-img-real" src="" class="rounded-circle d-none" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--primary);"><div id="modal-avatar-initial" class="d-inline-flex justify-content-center align-items-center bg-primary text-white rounded-circle fw-bold" style="width: 80px; height: 80px; font-size: 2rem;">U</div><div class="position-absolute bottom-0 end-0 bg-dark rounded-circle p-1 border border-secondary" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-camera text-white" style="font-size: 0.7rem;"></i></div></div><input type="file" id="input-foto-perfil" accept="image/*" style="display: none;" onchange="subirFotoPerfil(this)"><h4 class="fw-bold mb-1 text-white" id="modal-name">User</h4><p class="text-secondary small mb-4" id="modal-email">...</p><div class="badge bg-secondary mb-4 p-2 px-3 rounded-pill" id="modal-class-badge" style="font-size: 0.9rem;">Sin Clase</div><div class="row g-2 mb-4"><div class="col-6"><div class="stat-box"><div class="stat-value text-primary" id="modal-days">0</div><div class="stat-label">Días</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-age">--</div><div class="stat-label">Edad</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-weight">--</div><div class="stat-label">Peso</div></div></div><div class="col-6"><div class="stat-box"><div class="stat-value" id="modal-height">--</div><div class="stat-label">Altura</div></div></div></div><div class="text-start" id="gym-card-socio"><div class="stat-box p-3 align-items-stretch" style="align-items: stretch;"><div class="small text-secondary mb-2"><i class="fas fa-dumbbell me-1"></i> Mi gimnasio</div><div id="gym-card-socio-body"></div><div id="gym-socio-msg" class="small mt-2" role="alert"></div></div></div></div><div class="modal-footer flex-column gap-2"><button class="btn btn-outline-light w-100 rounded-pill fw-bold" onclick="openEditProfileModal()">Editar Perfil</button><button class="btn btn-outline-danger w-100 rounded-pill fw-bold" onclick="logout()">Cerrar Sesión</button></div></div></div></div>
   
   <div class="modal fade" id="editProfileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-content-hevy"><div class="modal-header"><h5 class="modal-title fw-bold text-white">Editar Datos</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="edit-profile-form"><div class="mb-3"><label class="form-label text-secondary small">Nombre</label><input type="text" id="edit-nombre" class="form-control form-control-dark" required></div><div class="mb-3"><label class="form-label text-secondary small">Apellido</label><input type="text" id="edit-apellido" class="form-control form-control-dark"></div><div class="row mb-3"><div class="col-6"><label class="form-label text-secondary small">Peso (kg)</label><input type="number" id="edit-peso" step="0.1" class="form-control form-control-dark"></div><div class="col-6"><label class="form-label text-secondary small">Altura (m)</label><input type="number" id="edit-altura" step="0.01" class="form-control form-control-dark"></div></div><div class="mb-3"><label class="form-label text-secondary small">Objetivo / Categoría</label><select id="edit-clase" class="form-select form-control-dark"><option value="" disabled>Cargando...</option></select></div><div class="d-grid mt-3"><button type="submit" class="btn btn-primary rounded-pill fw-bold">Guardar Cambios</button></div></form></div></div></div></div>
   
@@ -1063,6 +1063,63 @@
   </template>
 
   <script>
+    // ===== GT-COMMON: utilidades compartidas (mismo bloque en todas las pantallas) =====
+    // Escapa texto antes de meterlo en innerHTML (también sirve para valores de atributos).
+    function esc(s) {
+        return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    // La sesión del servidor venció (o nunca existió): limpiamos el login viejo y volvemos a login.html.
+    function sesionExpirada() {
+        localStorage.removeItem('gymtrack_user');
+        try { sessionStorage.setItem('gymtrack_flash', 'Tu sesión expiró'); } catch (e) {}
+        window.location.href = 'login.html';
+    }
+
+    // Reemplaza a fetch en toda la app. Devuelve siempre el JSON { ok, msg, data?, codigo? }
+    // con el status HTTP agregado en _status (fetch no tira excepción en 4xx/5xx).
+    // Ante un 401 redirige a login y deja la promesa colgada a propósito: la página se va,
+    // así el catch de quien llamó no llega a mostrar un "Error de conexión" de más.
+    // Solo tira excepción si falla la red.
+    async function apiFetch(url, options = {}) {
+        const init = Object.assign({}, options, { credentials: 'same-origin' });
+        const res = await fetch(url, init);
+        if (res.status === 401) {
+            sesionExpirada();
+            return new Promise(() => {});
+        }
+        let data;
+        try { data = await res.json(); }
+        catch (e) { data = { ok: false, msg: 'El servidor devolvió una respuesta inesperada.' }; }
+        if (data === null || typeof data !== 'object') data = { ok: false, msg: 'El servidor devolvió una respuesta inesperada.' };
+        data._status = res.status;
+        return data;
+    }
+
+    function apiPost(url, body) {
+        return apiFetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body || {})
+        });
+    }
+
+    // Cierra sesión en el servidor (si se puede) y siempre limpia y redirige, falle lo que falle.
+    async function logout() {
+        try {
+            await fetch('api/logout.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                signal: AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined
+            });
+        } catch (e) { /* si el servidor no responde, cerramos igual de este lado */ }
+        localStorage.removeItem('gymtrack_user');
+        window.location.href = 'login.html';
+    }
+    // ===== fin GT-COMMON =====
+
     let user = null;
     let selectedGoal = 'mantenimiento';
     let allExercises = [], currentRoutineId = null, currentRoutineExercises = [];
@@ -1388,8 +1445,7 @@
     // --- CARGAS ASINCRONAS & AUTOCOMPLETE ESTILO GOOGLE ---
     async function loadExercises() { 
         try {
-            const r = await fetch('api/obtener_ejercicios.php');
-            const d = await r.json();
+            const d = await apiFetch('api/obtener_ejercicios.php');
             if(d.ok){
                 allExercises = d.data; 
                 addExerciseCard(); 
@@ -1676,8 +1732,7 @@
     async function loadMyRoutines() { 
         const feed = document.getElementById('my-routines-feed'); 
         try { 
-            const res = await fetch(`api/obtener_mis_rutinas.php?user_id=${user.ID_Usuario}`); 
-            const data = await res.json(); 
+            const data = await apiFetch(`api/obtener_mis_rutinas.php`); 
             if(data.ok) { 
                 feed.innerHTML = ''; 
                 if(data.creadas.length > 0) {
@@ -1702,8 +1757,7 @@
     async function loadExploreRoutines() { 
         const feed = document.getElementById('explore-content'); 
         try { 
-            const res = await fetch(`api/obtener_rutinas.php?user_id=${user.ID_Usuario}`); 
-            const data = await res.json(); 
+            const data = await apiFetch(`api/obtener_rutinas.php`); 
             if(data.ok && data.data.length > 0) { 
                 feed.innerHTML = ''; 
                 const recomendadas = data.data.filter(r => r.tipo === 'recomendada'); 
@@ -1734,8 +1788,7 @@
 
             document.getElementById('vr-exercises-list').innerHTML = '<div class="text-center p-3 text-secondary"><i class="fas fa-spinner fa-spin me-2"></i>Cargando ejercicios...</div>'; 
             try { 
-                const res = await fetch(`api/obtener_detalle_rutina.php?id=${rid}&user_id=${user.ID_Usuario}`); 
-                const data = await res.json(); 
+                const data = await apiFetch(`api/obtener_detalle_rutina.php?id=${rid}`); 
                 if(data.ok) { 
                     let rNom = data.rutina ? data.rutina.nombre : 'Rutina';
                     if (!rNom || rNom === 'undefined') rNom = 'Rutina Personalizada';
@@ -1821,16 +1874,14 @@
             if (delModal) delModal.hide();
 
             if (pendingDeleteType === 'history') {
-                const res = await fetch('api/eliminar_historial.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, id_historial: pendingDeleteId }) }); 
-                const data = await res.json(); 
+                const data = await apiFetch('api/eliminar_historial.php', { method: 'POST', body: JSON.stringify({ id_historial: pendingDeleteId }) }); 
                 if(data.ok) { 
                     loadFullHistory(); 
                     showAlert("Registro eliminado");
                 } else { showAlert(data.msg); }
             
             } else if (pendingDeleteType === 'routine') {
-                const res = await fetch('api/eliminar_rutina.php', { method: 'POST', body: JSON.stringify({user_id: user.ID_Usuario, id_rutina: pendingDeleteId}) });
-                const data = await res.json();
+                const data = await apiFetch('api/eliminar_rutina.php', { method: 'POST', body: JSON.stringify({id_rutina: pendingDeleteId}) });
                 if(data.ok) { 
                     loadMyRoutines(); 
                     showAlert("Rutina eliminada"); 
@@ -1867,8 +1918,8 @@
     async function guardarCambiosEditor() {
         const nombre = document.getElementById('editor-routine-name').value;
         if(!nombre || editorExercises.length===0) return showAlert("Completa nombre y ejercicios");
-        const pl = { user_id: user.ID_Usuario, id_rutina: document.getElementById('editor-routine-id').value, nombre: nombre, ejercicios: editorExercises.map(e=>e.id) };
-        try { const res = await fetch('api/guardar_rutina_usuario.php', { method:'POST', body: JSON.stringify(pl)}); const d = await res.json(); if(d.ok) { bootstrap.Modal.getInstance(document.getElementById('routineEditorModal')).hide(); loadMyRoutines(); showAlert(d.msg); } else { showAlert(d.msg); } } catch(e){ showAlert("Error al guardar"); }
+        const pl = { id_rutina: document.getElementById('editor-routine-id').value, nombre: nombre, ejercicios: editorExercises.map(e=>e.id) };
+        try { const d = await apiFetch('api/guardar_rutina_usuario.php', { method:'POST', body: JSON.stringify(pl)}); if(d.ok) { bootstrap.Modal.getInstance(document.getElementById('routineEditorModal')).hide(); loadMyRoutines(); showAlert(d.msg); } else { showAlert(d.msg); } } catch(e){ showAlert("Error al guardar"); }
     }
 
     function abrirModalGuardarRutina() { if(document.querySelectorAll('#exercises-list .exercise-card').length === 0) return showAlert("Agrega ejercicios primero."); document.getElementById('new-routine-name').value = ''; new bootstrap.Modal(document.getElementById('saveRoutineModal')).show(); }
@@ -1877,8 +1928,7 @@
         const ids = []; document.querySelectorAll('#exercises-list .exercise-select').forEach(sel => { if(sel.value) ids.push(sel.value); });
         if(!nombre || ids.length===0) return showAlert("Completa nombre y ejercicios");
         try { 
-            const res = await fetch('api/crear_rutina.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, nombre: nombre, ejercicios: ids }) }); 
-            const d = await res.json(); 
+            const d = await apiFetch('api/crear_rutina.php', { method: 'POST', body: JSON.stringify({ nombre: nombre, ejercicios: ids }) }); 
             if(d.ok) { 
                 const modalEl = document.getElementById('saveRoutineModal');
                 const modal = bootstrap.Modal.getInstance(modalEl);
@@ -2145,8 +2195,7 @@
     async function loadFullHistory() { 
         const feed = document.getElementById('history-feed'); 
         try { 
-            const res = await fetch(`api/obtener_historial.php?user_id=${user.ID_Usuario}&limit=100`); 
-            const data = await res.json(); 
+            const data = await apiFetch(`api/obtener_historial.php?limit=100`); 
             if(data.ok && data.data.length > 0) { 
                 feed.innerHTML = ''; 
                 const grouped = {}; 
@@ -2264,14 +2313,187 @@
         } 
     }
 
-    document.getElementById('workout-form').addEventListener('submit', async function(e) { e.preventDefault(); const items = []; document.querySelectorAll('.exercise-card').forEach(card => { const id = card.querySelector('.exercise-select').value; const w = card.querySelector('.weight-input').value; const r = card.querySelector('.reps-input').value; const s = card.querySelector('.sets-input').value; if(id && w && r && s) items.push({ id_ejercicio: id, series: s, reps: r, peso: w }); }); if(items.length === 0) return showAlert("Añade ejercicios"); try { const d = new Date(); const localDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); const res = await fetch('api/guardar_entrenamiento.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, ejercicios: items, fecha: localDate, hora: new Date().toTimeString().slice(0, 8) }) }); const data = await res.json(); if(data.ok) { showAlert("¡Guardado!"); document.getElementById('exercises-list').innerHTML = ''; addExerciseCard(); loadFullHistory(); switchTab('tab-history'); } else { showAlert(data.msg); } } catch(e) { showAlert("Error guardando"); } });
+    document.getElementById('workout-form').addEventListener('submit', async function(e) { e.preventDefault(); const items = []; document.querySelectorAll('.exercise-card').forEach(card => { const id = card.querySelector('.exercise-select').value; const w = card.querySelector('.weight-input').value; const r = card.querySelector('.reps-input').value; const s = card.querySelector('.sets-input').value; if(id && w && r && s) items.push({ id_ejercicio: id, series: s, reps: r, peso: w }); }); if(items.length === 0) return showAlert("Añade ejercicios"); try { const d = new Date(); const localDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); const data = await apiFetch('api/guardar_entrenamiento.php', { method: 'POST', body: JSON.stringify({ ejercicios: items, fecha: localDate, hora: new Date().toTimeString().slice(0, 8) }) }); if(data.ok) { showAlert("¡Guardado!"); document.getElementById('exercises-list').innerHTML = ''; addExerciseCard(); loadFullHistory(); switchTab('tab-history'); } else { showAlert(data.msg); } } catch(e) { showAlert("Error guardando"); } });
+
+    // --- MI GIMNASIO (socio) ---
+    // Los avisos van dentro de la tarjeta (no con showAlert, que cerraría el modal de perfil).
+    let gymEncontrado = null; // { nombre, identificador } del paso 1 de "Unirme a un gimnasio"
+
+    function gymMensaje(texto, tipo) {
+        const el = document.getElementById('gym-socio-msg');
+        if (!el) return;
+        el.className = 'small mt-2 ' + (tipo === 'ok' ? 'text-success' : 'text-danger');
+        el.textContent = texto || '';
+    }
+
+    async function cargarMiGimnasio() {
+        const body = document.getElementById('gym-card-socio-body');
+        if (!body) return;
+        gymMensaje('');
+        body.innerHTML = '<div class="text-secondary small"><i class="fas fa-circle-notch fa-spin me-1"></i> Cargando...</div>';
+        try {
+            const r = await apiFetch('api/mi_solicitud.php');
+            if (!r.ok) { body.innerHTML = `<div class="text-danger small">${esc(r.msg)}</div>`; return; }
+            renderMiGimnasio(r.data || {});
+        } catch (e) {
+            console.error(e);
+            body.innerHTML = '<div class="text-danger small">No se pudo cargar tu gimnasio. Revisá tu conexión.</div>';
+        }
+    }
+
+    function renderMiGimnasio(d) {
+        const gim = d.gimnasio, sol = d.solicitud;
+        const body = document.getElementById('gym-card-socio-body');
+        gymEncontrado = null;
+
+        if (gim) {
+            body.innerHTML = `
+                <div class="fw-bold">Sos socio de ${esc(gim.nombre)}</div>
+                <div id="gym-socio-acciones" class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="gymSalirPreguntar()">Salir</button>
+                </div>`;
+            return;
+        }
+
+        if (sol && sol.estado === 'pendiente') {
+            body.innerHTML = `
+                <div class="fw-bold">Esperando respuesta de ${esc(sol.gimnasio)}</div>
+                <div class="small text-secondary">El gimnasio tiene que aprobar tu solicitud.</div>
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="gymCancelar()">Cancelar</button>
+                </div>`;
+            return;
+        }
+
+        let aviso = '';
+        let titulo = 'Unirme a un gimnasio';
+        if (sol && sol.estado === 'rechazada') {
+            titulo = 'Unirme a otro gimnasio';
+            aviso = `<div class="fw-bold">${esc(sol.gimnasio)} rechazó tu solicitud.</div>`;
+            // dias_para_reintentar llega como string (o null): se convierte con Number()
+            const dias = (sol.dias_para_reintentar === null || sol.dias_para_reintentar === undefined) ? null : Number(sol.dias_para_reintentar);
+            if (dias !== null && !isNaN(dias)) {
+                aviso += `<div class="small text-secondary">Podés volver a intentar en ${dias} ${dias === 1 ? 'día' : 'días'}.</div>`;
+            }
+            aviso += '<hr class="border-secondary my-3">';
+        }
+        body.innerHTML = aviso + `
+            <div class="fw-bold mb-2">${titulo}</div>
+            <form class="d-flex gap-2" onsubmit="gymBuscar(event)">
+                <input type="text" id="gym-ident-input" class="form-control form-control-dark" placeholder="gimnasio-central" maxlength="60" required autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Identificador del gimnasio">
+                <button type="submit" id="gym-buscar-btn" class="btn btn-primary rounded-pill px-3">Buscar</button>
+            </form>
+            <div class="form-text text-secondary">Pedile el identificador al gimnasio.</div>
+            <div id="gym-socio-resultado" class="mt-3" aria-live="polite"></div>`;
+    }
+
+    // Paso 1 (opcional): confirmar que el gimnasio existe antes de pedir unirse
+    async function gymBuscar(e) {
+        e.preventDefault();
+        const ident = document.getElementById('gym-ident-input').value.trim().toLowerCase();
+        const out = document.getElementById('gym-socio-resultado');
+        const btn = document.getElementById('gym-buscar-btn');
+        gymMensaje('');
+        gymEncontrado = null;
+        if (!ident) return;
+        btn.disabled = true;
+        try {
+            const r = await apiFetch('api/buscar_gimnasio.php?identificador=' + encodeURIComponent(ident));
+            if (r.ok && r.data) {
+                gymEncontrado = r.data;
+                out.innerHTML = `
+                    <div>¿Querés unirte a <strong>${esc(r.data.nombre)}</strong>?</div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" onclick="gymPedir()">Pedir unirme</button>
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="gymDescartar()">No</button>
+                    </div>`;
+            } else {
+                out.innerHTML = '';
+                gymMensaje(r.msg || 'No se pudo buscar el gimnasio.');
+            }
+        } catch (err) {
+            console.error(err);
+            out.innerHTML = '';
+            gymMensaje('Error de conexión.');
+        }
+        btn.disabled = false;
+    }
+
+    function gymDescartar() {
+        gymEncontrado = null;
+        const out = document.getElementById('gym-socio-resultado');
+        if (out) out.innerHTML = '';
+    }
+
+    // Paso 2: crear la solicitud (queda pendiente hasta que el admin responda)
+    async function gymPedir() {
+        if (!gymEncontrado) return;
+        const out = document.getElementById('gym-socio-resultado');
+        out.querySelectorAll('button').forEach(b => b.disabled = true);
+        try {
+            const r = await apiPost('api/crear_solicitud.php', { identificador: gymEncontrado.identificador });
+            if (r.ok) {
+                await cargarMiGimnasio();
+            } else if (r._status === 409) {
+                // ya tenías una pendiente o ya sos socio: el estado en pantalla estaba desactualizado
+                await cargarMiGimnasio();
+                gymMensaje(r.msg);
+            } else {
+                // 404 (no existe), 429 (COOLDOWN o demasiados intentos), 403 (los admins no pueden), 400
+                out.innerHTML = '';
+                gymEncontrado = null;
+                gymMensaje(r.msg || 'No se pudo enviar la solicitud.');
+            }
+        } catch (err) {
+            console.error(err);
+            out.querySelectorAll('button').forEach(b => b.disabled = false);
+            gymMensaje('Error de conexión.');
+        }
+    }
+
+    async function gymCancelar() {
+        const body = document.getElementById('gym-card-socio-body');
+        body.querySelectorAll('button').forEach(b => b.disabled = true);
+        try {
+            const r = await apiPost('api/cancelar_solicitud.php', {});
+            await cargarMiGimnasio();
+            if (!r.ok) gymMensaje(r.msg || 'No se pudo cancelar la solicitud.');
+        } catch (err) {
+            console.error(err);
+            body.querySelectorAll('button').forEach(b => b.disabled = false);
+            gymMensaje('Error de conexión.');
+        }
+    }
+
+    function gymSalirPreguntar() {
+        document.getElementById('gym-socio-acciones').innerHTML = `
+            <div class="small mb-2">¿Seguro que querés salir de tu gimnasio?</div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" onclick="gymSalir()">Sí, salir</button>
+                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="cargarMiGimnasio()">No</button>
+            </div>`;
+    }
+
+    async function gymSalir() {
+        const acciones = document.getElementById('gym-socio-acciones');
+        acciones.querySelectorAll('button').forEach(b => b.disabled = true);
+        try {
+            const r = await apiPost('api/salir_gimnasio.php', {});
+            await cargarMiGimnasio();
+            if (!r.ok) gymMensaje(r.msg || 'No se pudo salir del gimnasio.');
+        } catch (err) {
+            console.error(err);
+            acciones.querySelectorAll('button').forEach(b => b.disabled = false);
+            gymMensaje('Error de conexión.');
+        }
+    }
 
     // --- PERFIL ---
     window.openProfileModal = async function(){ 
         new bootstrap.Modal(document.getElementById('profileModal')).show(); 
+        cargarMiGimnasio();
         try {
-            const r = await fetch(`api/perfil.php?user_id=${user.ID_Usuario}`);
-            const d = await r.json();
+            const d = await apiFetch(`api/perfil.php`);
             if(d.ok){
                 const p=d.data; 
                 document.getElementById('modal-name').innerText=p.nombre_completo; 
@@ -2293,13 +2515,11 @@
         if (input.files && input.files[0]) {
             const formData = new FormData();
             formData.append('foto', input.files[0]);
-            formData.append('user_id', user.ID_Usuario);
 
             document.getElementById('modal-name').innerText = "Subiendo...";
 
             try {
-                const res = await fetch('api/subir_foto_perfil.php', { method: 'POST', body: formData });
-                const data = await res.json();
+                const data = await apiFetch('api/subir_foto_perfil.php', { method: 'POST', body: formData });
                 if(data.ok) {
                     user.foto = data.nueva_foto;
                     localStorage.setItem('gymtrack_user', JSON.stringify(user));
@@ -2314,8 +2534,8 @@
         }
     }
 
-    window.openEditProfileModal = async function(){ bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide(); if(window.currentUserProfile){ document.getElementById('edit-nombre').value=window.currentUserProfile.nombre; document.getElementById('edit-apellido').value=window.currentUserProfile.apellido; document.getElementById('edit-peso').value=window.currentUserProfile.peso; document.getElementById('edit-altura').value=window.currentUserProfile.altura; } const sel = document.getElementById('edit-clase'); sel.innerHTML = '<option>Cargando...</option>'; try { const r = await fetch('api/obtener_clases.php'); const d = await r.json(); if(d.ok) { sel.innerHTML = ''; d.data.forEach(c => { const opt = document.createElement('option'); opt.value = c.ID_Clase; opt.text = c.nombre; if(window.currentUserProfile && c.ID_Clase == window.currentUserProfile.id_clase) { opt.selected = true; } sel.appendChild(opt); }); } } catch(e) {} new bootstrap.Modal(document.getElementById('editProfileModal')).show(); }
-    document.getElementById('edit-profile-form').addEventListener('submit',async function(e){ e.preventDefault(); const pl={ user_id:user.ID_Usuario, nombre:document.getElementById('edit-nombre').value, apellido:document.getElementById('edit-apellido').value, peso:document.getElementById('edit-peso').value, altura:document.getElementById('edit-altura').value, id_clase:document.getElementById('edit-clase').value }; try{const r=await fetch('api/perfil.php',{method:'POST',body:JSON.stringify(pl)});const d=await r.json();if(d.ok){user=d.user; localStorage.setItem('gymtrack_user',JSON.stringify(user)); document.getElementById('user-name-display').innerText=user.nombre; bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide(); openProfileModal(); loadExploreRoutines(); showAlert("Perfil Actualizado"); }else showAlert(d.msg);}catch(e){} });
+    window.openEditProfileModal = async function(){ bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide(); if(window.currentUserProfile){ document.getElementById('edit-nombre').value=window.currentUserProfile.nombre; document.getElementById('edit-apellido').value=window.currentUserProfile.apellido; document.getElementById('edit-peso').value=window.currentUserProfile.peso; document.getElementById('edit-altura').value=window.currentUserProfile.altura; } const sel = document.getElementById('edit-clase'); sel.innerHTML = '<option>Cargando...</option>'; try { const d = await apiFetch('api/obtener_clases.php'); if(d.ok) { sel.innerHTML = ''; d.data.forEach(c => { const opt = document.createElement('option'); opt.value = c.ID_Clase; opt.text = c.nombre; if(window.currentUserProfile && c.ID_Clase == window.currentUserProfile.id_clase) { opt.selected = true; } sel.appendChild(opt); }); } } catch(e) {} new bootstrap.Modal(document.getElementById('editProfileModal')).show(); }
+    document.getElementById('edit-profile-form').addEventListener('submit',async function(e){ e.preventDefault(); const pl={ nombre:document.getElementById('edit-nombre').value, apellido:document.getElementById('edit-apellido').value, peso:document.getElementById('edit-peso').value, altura:document.getElementById('edit-altura').value, id_clase:document.getElementById('edit-clase').value }; try{const d = await apiFetch('api/perfil.php',{method:'POST',body:JSON.stringify(pl)});if(d.ok){user=d.user; localStorage.setItem('gymtrack_user',JSON.stringify(user)); document.getElementById('user-name-display').innerText=user.nombre; bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide(); openProfileModal(); loadExploreRoutines(); showAlert("Perfil Actualizado"); }else showAlert(d.msg);}catch(e){} });
 
     window.startRoutineFromModal = function() { 
         if(!currentRoutineExercises || currentRoutineExercises.length === 0) return showAlert("Rutina vacía."); 
@@ -2332,13 +2552,12 @@
         
         switchTab('tab-logger'); 
     }
-    window.toggleFavorite = async function() { if(!currentRoutineId) return; try { await fetch('api/toggle_favorito.php', { method: 'POST', body: JSON.stringify({ user_id: user.ID_Usuario, rutina_id: currentRoutineId }) }); loadMyRoutines(); bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide(); } catch(e) {} }
+    window.toggleFavorite = async function() { if(!currentRoutineId) return; try { await apiFetch('api/toggle_favorito.php', { method: 'POST', body: JSON.stringify({ rutina_id: currentRoutineId }) }); loadMyRoutines(); bootstrap.Modal.getInstance(document.getElementById('viewRoutineModal')).hide(); } catch(e) {} }
     window.switchTab = function(t,b){document.querySelectorAll('.section-content').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');if(b){document.querySelectorAll('.nav-item-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');} if(t==='tab-my-routines')loadMyRoutines();}
-    window.logout = function(){localStorage.removeItem('gymtrack_user');safeRedirect('login.html');}
-    async function cargarClasesDisponibles(sexo) { const sel = document.getElementById('ob-clase'); sel.innerHTML='<option>Cargando...</option>'; sel.disabled=true; try{const r=await fetch(`api/obtener_clases.php?sexo=${sexo}`);const d=await r.json();if(d.ok){sel.innerHTML='<option value="" selected disabled>Elige...</option>';d.data.forEach(c=>{sel.innerHTML+=`<option value="${c.ID_Clase}">${c.nombre}</option>`});sel.disabled=false;}else sel.innerHTML='<option>Error</option>';}catch(e){} }
+    async function cargarClasesDisponibles(sexo) { const sel = document.getElementById('ob-clase'); sel.innerHTML='<option>Cargando...</option>'; sel.disabled=true; try{const d = await apiFetch(`api/obtener_clases.php?sexo=${sexo}`);if(d.ok){sel.innerHTML='<option value="" selected disabled>Elige...</option>';d.data.forEach(c=>{sel.innerHTML+=`<option value="${c.ID_Clase}">${c.nombre}</option>`});sel.disabled=false;}else sel.innerHTML='<option>Error</option>';}catch(e){} }
     
     // --- ONBOARDING FORM ---
-    document.getElementById('onboarding-form').addEventListener('submit', async function(e){ e.preventDefault(); const pl={user_id:user.ID_Usuario,nombre:user.nombre,apellido:user.apellido,telefono:document.getElementById('ob-telefono').value,sexo:document.getElementById('ob-sexo').value,peso:document.getElementById('ob-peso').value,altura:document.getElementById('ob-altura').value,id_clase:document.getElementById('ob-clase').value}; try{const r=await fetch('api/perfil.php',{method:'POST',body:JSON.stringify(pl)});const d=await r.json();if(d.ok){user=d.user;localStorage.setItem('gymtrack_user',JSON.stringify(user));bootstrap.Modal.getInstance(document.getElementById('completeProfileModal')).hide();showAlert("¡Listo!");loadExploreRoutines();}else showAlert(d.msg);}catch(e){} });
+    document.getElementById('onboarding-form').addEventListener('submit', async function(e){ e.preventDefault(); const pl={nombre:user.nombre,apellido:user.apellido,telefono:document.getElementById('ob-telefono').value,sexo:document.getElementById('ob-sexo').value,peso:document.getElementById('ob-peso').value,altura:document.getElementById('ob-altura').value,id_clase:document.getElementById('ob-clase').value}; try{const d = await apiFetch('api/perfil.php',{method:'POST',body:JSON.stringify(pl)});if(d.ok){user=d.user;localStorage.setItem('gymtrack_user',JSON.stringify(user));bootstrap.Modal.getInstance(document.getElementById('completeProfileModal')).hide();showAlert("¡Listo!");loadExploreRoutines();}else showAlert(d.msg);}catch(e){} });
 
     // --- LÓGICA DE CALCULADORA NUTRICIONAL (Integrada) ---
     
@@ -2670,41 +2889,27 @@
 
         const payload = {
             mensaje: text,
-            user_id: (user && user.ID_Usuario) ? user.ID_Usuario : null,
             historial: coachChatHistory.slice(-6)
         };
 
         try {
-            let res;
-            try {
-                res = await fetch('api/chat_coach.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (err) {
-                res = await fetch('api/coach/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            }
-
-            if (!res || !res.ok) {
-                try {
-                    res = await fetch('api/coach/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                } catch(e) {}
-            }
-
+            const opcionesChat = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
             let data;
             try {
-                data = await res.json();
-            } catch(jsonErr) {
-                throw new Error("Respuesta inválida del servidor");
+                data = await apiFetch('api/chat_coach.php', opcionesChat);
+            } catch (err) {
+                data = await apiFetch('api/coach/chat', opcionesChat); // ruta alternativa si falla la red
+            }
+            if (data._status >= 400) {
+                // Si la ruta alternativa tampoco da una respuesta buena, nos quedamos con el error original del servidor.
+                try {
+                    const alt = await apiFetch('api/coach/chat', opcionesChat);
+                    if (alt.ok) data = alt;
+                } catch (e) {}
             }
 
             removeCoachTyping();

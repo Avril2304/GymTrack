@@ -211,9 +211,25 @@ class AuthController
             return response()->json(['ok' => false, 'msg' => 'Faltan campos obligatorios']);
         }
 
+        // Largos de las columnas (con la base en modo estricto, pasarse tira una excepcion y el sitio
+        // responde vacio, que la pantalla muestra como "Error de conexion").
+        if (mb_strlen($nombre) > 30 || mb_strlen($apellido) > 30) {
+            return response()->json(['ok' => false, 'msg' => 'El nombre y el apellido pueden tener hasta 30 caracteres.']);
+        }
+        if (mb_strlen($mail) > 40 || !filter_var($mail, FILTER_VALIDATE_EMAIL)) {
+            return response()->json(['ok' => false, 'msg' => 'Ingresá un correo válido de hasta 40 caracteres.']);
+        }
+        if (mb_strlen($dni) > 20) {
+            return response()->json(['ok' => false, 'msg' => 'El DNI es demasiado largo.']);
+        }
+
         $existe = Usuario::where('mail', $mail)->exists();
         if ($existe) {
             return response()->json(['ok' => false, 'msg' => 'El correo electrónico ya está registrado']);
+        }
+        // El DNI es UNIQUE en la base: sin este chequeo, registrar un DNI repetido tiraba un error 500.
+        if ($dni !== '' && Usuario::where('DNI', $dni)->exists()) {
+            return response()->json(['ok' => false, 'msg' => 'Ese DNI ya está registrado. Si ya tenés cuenta, ingresá con tu correo.']);
         }
 
         $hashClave = password_hash($clave, PASSWORD_DEFAULT);
@@ -228,21 +244,30 @@ class AuthController
         $alturaRaw = floatval($request->input('altura') ?: 1.70);
         $altura = ($alturaRaw >= 0.5 && $alturaRaw <= 2.5) ? $alturaRaw : 1.70;
 
-        $usuario = Usuario::create([
-            'nombre' => $nombre,
-            'apellido' => $apellido,
-            'mail' => $mail,
-            'clave' => $hashClave,
-            'DNI' => $dni,
-            'fecha_nacimiento' => $fecha_nacimiento,
-            'sexo' => $sexo ?: 'M',
-            'telefono' => $telefono,
-            'foto' => $foto,
-            'ID_Clase' => $id_clase,
-            'peso' => $peso,
-            'altura' => $altura,
-            'fecha_alta' => date('Y-m-d')
-        ]);
+        try {
+            $usuario = Usuario::create([
+                'nombre' => $nombre,
+                'apellido' => $apellido,
+                'mail' => $mail,
+                'clave' => $hashClave,
+                'DNI' => $dni !== '' ? $dni : null,
+                'fecha_nacimiento' => $fecha_nacimiento,
+                'sexo' => $sexo ?: 'M',
+                'telefono' => $telefono,
+                'foto' => $foto,
+                'ID_Clase' => $id_clase,
+                'peso' => $peso,
+                'altura' => $altura,
+                'fecha_alta' => date('Y-m-d')
+            ]);
+        } catch (\Throwable $e) {
+            // Carrera entre dos registros iguales (23000 = clave unica repetida) u otro fallo de la base.
+            error_log('register: ' . $e->getMessage());
+            if ((string) $e->getCode() === '23000') {
+                return response()->json(['ok' => false, 'msg' => 'Ese correo o ese DNI ya están registrados.']);
+            }
+            return response()->json(['ok' => false, 'msg' => 'No se pudo crear la cuenta. Probá de nuevo en unos minutos.']);
+        }
 
         return response()->json([
             'ok' => true,

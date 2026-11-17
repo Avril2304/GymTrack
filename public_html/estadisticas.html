@@ -138,15 +138,19 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         try {
-            const userStr = localStorage.getItem('gymtrack_user');
-            const currentUser = userStr ? JSON.parse(userStr) : null;
-            const adminParam = (currentUser && currentUser.ID_Usuario) ? `?admin_id=${currentUser.ID_Usuario}` : '';
-            const res = await fetch(`api/dashboard.php${adminParam}`);
-            const data = await res.json();
+            const data = await apiFetch('api/dashboard.php');
 
             if (!data.ok) {
-                document.getElementById('stats-row').innerHTML =
-                    `<div class="col-12 text-center text-danger">${data.msg}</div>`;
+                if (data._status === 403 && data.codigo === 'ADMIN_SIN_GIMNASIO') {
+                    document.getElementById('stats-row').innerHTML = `
+                        <div class="col-12 text-center py-4">
+                            <p class="mb-3">Creá tu gimnasio primero.</p>
+                            <a href="admin.html" class="btn btn-primary rounded-pill px-4">Ir a crear mi gimnasio</a>
+                        </div>`;
+                } else {
+                    document.getElementById('stats-row').innerHTML =
+                        `<div class="col-12 text-center text-danger">${esc(data.msg)}</div>`;
+                }
                 return;
             }
 
@@ -194,8 +198,8 @@
             col.innerHTML = `
                 <div class="stat-card">
                     <i class="fas ${c.icon} stat-icon"></i>
-                    <div class="stat-value">${c.value}</div>
-                    <div class="stat-label">${c.label}</div>
+                    <div class="stat-value">${esc(c.value)}</div>
+                    <div class="stat-label">${esc(c.label)}</div>
                     ${c.trendClass ? `<div class="stat-trend ${c.trendClass}"><i class="fas ${c.trendIcon} me-1"></i>vs. mes anterior</div>` : ''}
                 </div>
             `;
@@ -252,10 +256,62 @@
         });
     }
 
-    function logout() {
+    // ===== GT-COMMON: utilidades compartidas (mismo bloque en todas las pantallas) =====
+    // Escapa texto antes de meterlo en innerHTML (también sirve para valores de atributos).
+    function esc(s) {
+        return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    // La sesión del servidor venció (o nunca existió): limpiamos el login viejo y volvemos a login.html.
+    function sesionExpirada() {
+        localStorage.removeItem('gymtrack_user');
+        try { sessionStorage.setItem('gymtrack_flash', 'Tu sesión expiró'); } catch (e) {}
+        window.location.href = 'login.html';
+    }
+
+    // Reemplaza a fetch en toda la app. Devuelve siempre el JSON { ok, msg, data?, codigo? }
+    // con el status HTTP agregado en _status (fetch no tira excepción en 4xx/5xx).
+    // Ante un 401 redirige a login y deja la promesa colgada a propósito: la página se va,
+    // así el catch de quien llamó no llega a mostrar un "Error de conexión" de más.
+    // Solo tira excepción si falla la red.
+    async function apiFetch(url, options = {}) {
+        const init = Object.assign({}, options, { credentials: 'same-origin' });
+        const res = await fetch(url, init);
+        if (res.status === 401) {
+            sesionExpirada();
+            return new Promise(() => {});
+        }
+        let data;
+        try { data = await res.json(); }
+        catch (e) { data = { ok: false, msg: 'El servidor devolvió una respuesta inesperada.' }; }
+        if (data === null || typeof data !== 'object') data = { ok: false, msg: 'El servidor devolvió una respuesta inesperada.' };
+        data._status = res.status;
+        return data;
+    }
+
+    function apiPost(url, body) {
+        return apiFetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body || {})
+        });
+    }
+
+    // Cierra sesión en el servidor (si se puede) y siempre limpia y redirige, falle lo que falle.
+    async function logout() {
+        try {
+            await fetch('api/logout.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                signal: AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined
+            });
+        } catch (e) { /* si el servidor no responde, cerramos igual de este lado */ }
         localStorage.removeItem('gymtrack_user');
         window.location.href = 'login.html';
     }
+    // ===== fin GT-COMMON =====
   </script>
 </body>
 </html>
