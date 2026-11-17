@@ -9,6 +9,7 @@ Cambios de base de datos, en orden numerado. Cada archivo explica en su cabecera
 | `07_solicitud.sql` | Tabla `Solicitud` (pendiente / aceptada / rechazada / cancelada) | Aplicada (variante `hosting/`) |
 | `08_login_intentos.sql` | Tabla `login_intentos` para limitar intentos fallidos de login | Aplicada |
 | `09_asistencia_unica.sql` | `UNIQUE (ID_Usuario, fecha)` en `Asistencia`: una asistencia por dia | Aplicada |
+| `10_movimiento_socio.sql` | Tabla `Movimiento_Socio`: altas y bajas de socios (alimenta "Socios nuevos" y "Bajas") | Aplicada |
 
 Las migraciones 01 a 04 (tablas de asistencia) **no estan en este repo**: ya estaban aplicadas en la base real antes de empezar a versionar. Por eso el dump de `database/` no trae la tabla `Asistencia`; las estadisticas la necesitan.
 
@@ -20,13 +21,13 @@ Las migraciones 01 a 04 (tablas de asistencia) **no estan en este repo**: ya est
 
 ## En cada entorno
 
-**Local (XAMPP):** importar `database/gymtrack_demo.sql` y correr `05` a `09` en orden. Las `05` a `07` usan `information_schema` y piden permisos que en local si hay.
+**Local (XAMPP):** importar `database/gymtrack_demo.sql` y correr `05` a `10` en orden. Las `05` a `07` usan `information_schema` y piden permisos que en local si hay.
 
 **Hosting (cPanel):** el usuario de la base **no puede leer `information_schema`**, asi que `05` a `07` fallan con el error #1044. Para una base nueva usar la variante de `hosting/`:
 
 1. `hosting/05-07_1_diagnostico.sql`: solo lee, dice si la base esta lista.
 2. `hosting/05-07_2_aplicar.sql`: aplica `05` a `07` con sentencias simples. Correr **de a una sentencia**: si alguna dice "Duplicate column name", "Duplicate key name" o "already exists", ese paso ya estaba hecho.
 
-`08` y `09` ya estan escritas sin `information_schema`: se pueden pegar tal cual en phpMyAdmin.
+`08`, `09` y `10` ya estan escritas sin `information_schema`: se pueden pegar tal cual en phpMyAdmin.
 
-> En la base real de produccion `05` a `09` ya estan aplicadas. No volver a correrlas.
+> En la base real de produccion `05` a `10` ya estan aplicadas. No volver a correrlas.

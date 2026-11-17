@@ -15,6 +15,7 @@ if (__FILE__ === $_SERVER['SCRIPT_FILENAME']) {
 }
 
 require_once __DIR__ . '/sesion.php';
+require_once __DIR__ . '/movimientos.php'; // altas y bajas de socios (Movimiento_Socio)
 
 define('GT_COOLDOWN_DIAS', 7);          // espera tras un rechazo antes de pedir de nuevo al mismo gimnasio
 define('GT_MAX_BUSQUEDAS_GYM', 15);     // buscar_gimnasio: intentos por minuto y sesion
@@ -491,6 +492,7 @@ function gt_usuario_salir(PDO $pdo, $userId) {
             return gt_res_error(409, 'No pertenecés a ningún gimnasio.');
         }
         $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = NULL WHERE ID_Usuario = ?")->execute([(int) $userId]);
+        gt_registrar_movimiento($pdo, $userId, $u['ID_Gimnasio'], 'baja', 'socio');
         return gt_res_ok('Saliste del gimnasio.');
     });
 }
@@ -570,6 +572,7 @@ function gt_solicitud_resolver(PDO $pdo, $adminId, $idSolicitud, $accion) {
         }
         if ($gymUsuario === null) {
             $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = ? WHERE ID_Usuario = ?")->execute([$miGym, $uid]);
+            gt_registrar_movimiento($pdo, $uid, $miGym, 'alta', 'solicitud');
         }
         $cerrar->execute(['aceptada', $idSolicitud]);
         return gt_res_ok('Solicitud aprobada. El usuario ya es socio de tu gimnasio.');

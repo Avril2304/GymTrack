@@ -10,6 +10,7 @@ Stack: pantallas HTML (Bootstrap) + API en PHP (endpoints directos y una capa MV
 | --- | --- |
 | [docs/ROLES.md](docs/ROLES.md) | Roles (socio, admin), como un socio se une a un gimnasio y reglas del alta |
 | [docs/API.md](docs/API.md) | Todos los endpoints, quien puede llamarlos y como se identifica al usuario |
+| [docs/DEMO.md](docs/DEMO.md) | Datos de demostracion: simulador, cron diario, altas y bajas, y como borrarlos |
 | [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Como subir el proyecto a cPanel y actualizar la base sin romper nada |
 | [migrations/README.md](migrations/README.md) | Cambios de base de datos, orden y cuales correr en cada entorno |
 | [database/README.md](database/README.md) | Que contiene el dump de demostracion |
@@ -26,6 +27,7 @@ GymTrack/
 |   |-- admin.html            Panel del administrador (gimnasio, socios, solicitudes)
 |   |-- estadisticas.html     Estadisticas del gimnasio del administrador
 |   |-- api/                  Endpoints PHP y plantillas de configuracion (*.example.php)
+|   |-- demo/                 Simulador de actividad para la demo (con token, ver docs/DEMO.md)
 |   |-- img/, videos/         Recursos de la interfaz
 |-- backend/                  Capa MVC: router, controladores y modelos (fuera de la web publica)
 |-- migrations/               Cambios de base de datos, en orden numerado (+ variantes para hosting)

@@ -53,6 +53,7 @@
     .stat-trend.up { color: #16a765; }
     .stat-trend.down { color: var(--danger); }
     .stat-trend.neutral { color: var(--text-sec); }
+    .stat-trend.info { color: #4d9bff; }
 
     .chart-card { background-color: var(--bg-card); border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
     .chart-card h6 { color: var(--text-sec); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; margin-bottom: 16px; }
@@ -103,20 +104,20 @@
     <div class="row">
         <div class="col-md-6">
             <div class="chart-card">
-                <h6><i class="fas fa-dumbbell me-1"></i> Tipos de actividad usados</h6>
-                <div class="chart-wrap"><canvas id="chartActividades"></canvas></div>
+                <h6><i class="fas fa-bullseye me-1"></i> Socios por objetivo</h6>
+                <div class="chart-wrap"><canvas id="chartObjetivos"></canvas></div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="chart-card">
-                <h6><i class="fas fa-calendar-week me-1"></i> Asistencia por día de la semana</h6>
+                <h6><i class="fas fa-calendar-week me-1"></i> Entrenamientos por día de la semana</h6>
                 <div class="chart-wrap"><canvas id="chartDias"></canvas></div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="chart-card">
-                <h6><i class="fas fa-clock me-1"></i> Turno mañana vs. tarde</h6>
-                <div class="chart-wrap"><canvas id="chartTurnos"></canvas></div>
+                <h6><i class="fas fa-repeat me-1"></i> Frecuencia semanal de los socios (últimas 4 semanas)</h6>
+                <div class="chart-wrap"><canvas id="chartFrecuencia"></canvas></div>
             </div>
         </div>
         <div class="col-md-6">
@@ -131,6 +132,14 @@
 
   <script>
     const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    // Grupos de frecuencia semanal (mismo orden y claves que devuelve api/dashboard.php)
+    const FRECUENCIA = {
+        sin: 'No entrenó',
+        menos_1: 'Menos de 1 vez',
+        '1_a_2': '1 a 2 veces',
+        '3_a_4': '3 a 4 veces',
+        '5_o_mas': '5 o más veces'
+    };
     const COLORS = ['#0d6efd', '#16a765', '#fad165', '#dc3545', '#a479e2', '#43d692', '#4a86e8', '#f691b3', '#efa093', '#89d3b2'];
 
     Chart.defaults.color = '#A0A0A5';
@@ -164,25 +173,40 @@
         }
     });
 
+    // Compara con los 30 días anteriores y muestra la diferencia con signo ("+16" / "-16").
+    // masEsMejor: true para altas (subir es bueno, verde); false para bajas (subir es malo, rojo).
+    function tendencia(m, masEsMejor, sustantivo) {
+        const dif = m.actual - m.anterior;
+        const sube = dif > 0;
+        return {
+            trendIcon: dif === 0 ? 'fa-minus' : (sube ? 'fa-arrow-up' : 'fa-arrow-down'),
+            trendClass: dif === 0 ? 'neutral' : ((sube === masEsMejor) ? 'up' : 'down'),
+            trendText: dif === 0
+                ? 'Igual que hace 30 días'
+                : `${sube ? '+' : '-'}${Math.abs(dif)} ${sustantivo} que hace 30 días`
+        };
+    }
+
     function renderStats(n) {
         const cards = [
             {
                 icon: 'fa-user-check',
                 value: n.porcentaje_activos + '%',
-                label: 'Socios activos (últ. 7 días)'
+                label: 'Socios activos (últ. 7 días)',
+                trendClass: 'info',
+                trendIcon: 'fa-users',
+                trendText: `${n.socios_activos} de ${n.socios_total} inscriptos`
             },
-            {
-                icon: 'fa-calendar-day',
-                value: n.promedio_por_dia,
-                label: 'Asistencias promedio / día'
-            },
-            {
+            Object.assign({
                 icon: 'fa-user-plus',
-                value: n.porcentaje_nuevos_vs_mes === null ? 'S/D' : (n.porcentaje_nuevos_vs_mes >= 0 ? '+' : '') + n.porcentaje_nuevos_vs_mes + '%',
-                label: 'Socios nuevos vs. mes anterior',
-                trendClass: n.porcentaje_nuevos_vs_mes === null ? 'neutral' : (n.porcentaje_nuevos_vs_mes >= 0 ? 'up' : 'down'),
-                trendIcon: n.porcentaje_nuevos_vs_mes === null ? 'fa-minus' : (n.porcentaje_nuevos_vs_mes >= 0 ? 'fa-arrow-up' : 'fa-arrow-down')
-            },
+                value: n.socios_nuevos.actual,
+                label: 'Socios nuevos (últ. 30 días)'
+            }, tendencia(n.socios_nuevos, true, 'socios')),
+            Object.assign({
+                icon: 'fa-user-minus',
+                value: n.bajas.actual,
+                label: 'Bajas de socios (últ. 30 días)'
+            }, tendencia(n.bajas, false, 'bajas')),
             {
                 icon: 'fa-list-check',
                 value: n.porcentaje_ejercicios_usados + '%',
@@ -200,7 +224,7 @@
                     <i class="fas ${c.icon} stat-icon"></i>
                     <div class="stat-value">${esc(c.value)}</div>
                     <div class="stat-label">${esc(c.label)}</div>
-                    ${c.trendClass ? `<div class="stat-trend ${c.trendClass}"><i class="fas ${c.trendIcon} me-1"></i>vs. mes anterior</div>` : ''}
+                    ${c.trendClass ? `<div class="stat-trend ${c.trendClass}"><i class="fas ${c.trendIcon} me-1"></i>${esc(c.trendText)}</div>` : ''}
                 </div>
             `;
             container.appendChild(col);
@@ -208,12 +232,12 @@
     }
 
     function renderCharts(g) {
-        // 1. Actividades (torta)
-        new Chart(document.getElementById('chartActividades'), {
+        // 1. Socios por objetivo (torta)
+        new Chart(document.getElementById('chartObjetivos'), {
             type: 'doughnut',
             data: {
-                labels: g.actividades.map(a => a.actividad),
-                datasets: [{ data: g.actividades.map(a => a.cantidad), backgroundColor: COLORS, borderColor: '#1c1c1e', borderWidth: 2 }]
+                labels: g.objetivos.map(o => o.objetivo),
+                datasets: [{ label: 'Socios', data: g.objetivos.map(o => o.cantidad), backgroundColor: COLORS, borderColor: '#1c1c1e', borderWidth: 2 }]
             },
             options: { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }, maintainAspectRatio: false }
         });
@@ -225,19 +249,26 @@
             type: 'bar',
             data: {
                 labels: DIAS,
-                datasets: [{ label: 'Asistencias', data: diasData, backgroundColor: '#0d6efd', borderRadius: 6 }]
+                datasets: [{ label: 'Entrenamientos', data: diasData, backgroundColor: '#0d6efd', borderRadius: 6 }]
             },
             options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, maintainAspectRatio: false }
         });
 
-        // 3. Turnos (torta)
-        new Chart(document.getElementById('chartTurnos'), {
-            type: 'pie',
+        // 3. Frecuencia semanal (barras): cuántos socios entrenan X veces por semana en promedio
+        new Chart(document.getElementById('chartFrecuencia'), {
+            type: 'bar',
             data: {
-                labels: g.turnos.map(t => t.turno),
-                datasets: [{ data: g.turnos.map(t => t.cantidad), backgroundColor: ['#fad165', '#a479e2'], borderColor: '#1c1c1e', borderWidth: 2 }]
+                labels: g.frecuencia_semanal.map(f => FRECUENCIA[f.rango] || f.rango),
+                datasets: [{ label: 'Socios', data: g.frecuencia_semanal.map(f => f.cantidad), backgroundColor: '#a479e2', borderRadius: 6 }]
             },
-            options: { plugins: { legend: { position: 'right' } }, maintainAspectRatio: false }
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { title: { display: true, text: 'Veces por semana (promedio)' } },
+                    y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: 'Socios' } }
+                },
+                maintainAspectRatio: false
+            }
         });
 
         // 4. Top ejercicios (barras horizontales)

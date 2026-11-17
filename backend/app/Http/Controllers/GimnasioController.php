@@ -67,6 +67,13 @@ class GimnasioController
         // 3. Estado del usuario destino, leído con bloqueo para decidir sin carreras
         $pdo = \Illuminate\Database\Capsule\Manager::getPdo();
 
+        // Registro de altas y bajas (Movimiento_Socio), compartido con la capa api/
+        $rutaMovimientos = dirname(__DIR__, 4) . '/public_html/api/movimientos.php';
+        if (!file_exists($rutaMovimientos)) {
+            return response()->json(['ok' => false, 'msg' => 'No se encontró public_html/api/movimientos.php.'], 500);
+        }
+        require_once $rutaMovimientos;
+
         try {
             $pdo->beginTransaction();
             $stmt = $pdo->prepare("SELECT ID_Gimnasio, es_admin FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
@@ -90,6 +97,7 @@ class GimnasioController
                 }
                 if ($actual === null) {
                     $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = ? WHERE ID_Usuario = ?")->execute([$miGym, $userId]);
+                    \gt_registrar_movimiento($pdo, $userId, $miGym, 'alta', 'admin');
                     // Si tenia una solicitud pendiente (a este u otro gimnasio), queda sin efecto.
                     $pdo->prepare("UPDATE Solicitud SET estado = 'cancelada', fecha_resolucion = NOW() WHERE ID_Usuario = ? AND estado = 'pendiente'")->execute([$userId]);
                 }
@@ -100,6 +108,7 @@ class GimnasioController
                     return response()->json(['ok' => false, 'msg' => 'Ese usuario no pertenece a tu gimnasio.'], 404);
                 }
                 $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = NULL WHERE ID_Usuario = ?")->execute([$userId]);
+                \gt_registrar_movimiento($pdo, $userId, $miGym, 'baja', 'admin');
             }
             $pdo->commit();
         } catch (\Throwable $e) {

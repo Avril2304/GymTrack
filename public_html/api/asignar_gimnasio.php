@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'sesion.php';
 gt_iniciar_sesion();
 require_once 'conexion.php';
+require_once __DIR__ . '/movimientos.php'; // altas y bajas de socios (Movimiento_Socio)
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     gt_error(405, 'Método no permitido.');
@@ -65,6 +66,7 @@ try {
         }
         if ($actual === null) {
             $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = ? WHERE ID_Usuario = ?")->execute([$miGym, $userId]);
+            gt_registrar_movimiento($pdo, $userId, $miGym, 'alta', 'admin');
             // Si tenia una solicitud pendiente (a este u otro gimnasio), queda sin efecto.
             $pdo->prepare("UPDATE Solicitud SET estado = 'cancelada', fecha_resolucion = NOW() WHERE ID_Usuario = ? AND estado = 'pendiente'")->execute([$userId]);
         }
@@ -76,6 +78,7 @@ try {
             gt_error(404, 'Ese usuario no pertenece a tu gimnasio.');
         }
         $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = NULL WHERE ID_Usuario = ?")->execute([$userId]);
+        gt_registrar_movimiento($pdo, $userId, $miGym, 'baja', 'admin');
     }
     $pdo->commit();
 

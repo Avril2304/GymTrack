@@ -49,7 +49,7 @@ Formato de respuesta: `{ "ok": true|false, "msg": "...", ... }`.
 | `actualizar_gimnasio.php` | POST | Cambia nombre, direccion, telefono, mail o identificador de **su** gimnasio |
 | `mi_gimnasio.php` | GET | Datos de su gimnasio, identificador para compartir y contadores |
 | `obtener_usuarios.php` | GET | Socios de **su** gimnasio |
-| `dashboard.php` | GET | Estadisticas de **su** gimnasio |
+| `dashboard.php` | GET | Estadisticas de **su** gimnasio: socios activos (y cuantos de cuantos), altas y bajas de los ultimos 30 dias contra los 30 anteriores, y graficos |
 | `solicitudes_pendientes.php` | GET | Solicitudes pendientes de su gimnasio |
 | `resolver_solicitud.php` | POST | Aprueba o rechaza (`id_solicitud`, `accion`) |
 | `buscar_usuario.php` | GET | Busca a una persona por mail exacto |
@@ -58,3 +58,5 @@ Formato de respuesta: `{ "ok": true|false, "msg": "...", ... }`.
 ## Crons (`public_html/api/cron_*.php`)
 
 Se programan desde cPanel y se protegen con el parametro `?token=` (debe coincidir con `CRON_TOKEN` de `mail_config.php`): `cron_inactividad.php` (recordatorios), `cron_resumen_mensual.php` (resumen mensual) y `cron_sync_exercisedb.php` (sincroniza ejercicios). Ver [DESPLIEGUE.md](DESPLIEGUE.md).
+
+Los scripts de `public_html/demo/` (simulador de actividad) usan otro token, `demo_token` de `db_config.php`. Ver [DEMO.md](DEMO.md).

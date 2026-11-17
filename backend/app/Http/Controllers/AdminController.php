@@ -102,46 +102,45 @@ class AdminController
 
             // Fragmentos de filtro por gimnasio, reutilizados en cada consulta.
             $filtroA = $idGimnasio !== null ? "AND a.ID_Gimnasio = :g" : "";       // alias Asistencia
-            $filtroU = $idGimnasio !== null ? "AND ID_Gimnasio = :g" : "";        // Usuario sin alias
             $filtroJoinU = $idGimnasio !== null ? "JOIN Usuario u ON u.ID_Usuario = h.ID_Usuario AND u.ID_Gimnasio = :g" : "";
             $bindG = $idGimnasio !== null ? ['g' => $idGimnasio] : [];
 
-            // 1. % de socios activos (asistieron en los últimos 7 días) — vía Asistencia
-            $stmt = $pdo->prepare("
-                SELECT ROUND(
-                  (SELECT COUNT(DISTINCT a.ID_Usuario) FROM Asistencia a WHERE a.fecha >= CURDATE() - INTERVAL 7 DAY $filtroA)
-                  / NULLIF((SELECT COUNT(*) FROM Usuario WHERE 1=1 $filtroU), 0) * 100
-                , 1) AS valor
-            ");
-            $stmt->execute($bindG);
-            $activos = $stmt->fetch(\PDO::FETCH_ASSOC)['valor'] ?? 0;
+            // "Socios" = usuarios del gimnasio que no son administradores.
+            // Las métricas de socios se filtran por el gimnasio del socio (Usuario.ID_Gimnasio);
+            // las de entrenamientos, por el gimnasio donde se registró cada uno (Asistencia.ID_Gimnasio).
+            $filtroSocio = "u.es_admin = 'N'" . ($idGimnasio !== null ? " AND u.ID_Gimnasio = :g" : "");
 
-            // 2. Promedio de asistencias por día (últimos 30 días) — vía Asistencia
-            $stmt = $pdo->prepare("
-                SELECT ROUND(AVG(cantidad), 1) AS valor
-                FROM (
-                  SELECT a.fecha, COUNT(DISTINCT a.ID_Usuario) AS cantidad
-                  FROM Asistencia a
-                  WHERE a.fecha >= CURDATE() - INTERVAL 30 DAY $filtroA
-                  GROUP BY a.fecha
-                ) t
-            ");
-            $stmt->execute($bindG);
-            $promedio_dia = $stmt->fetch(\PDO::FETCH_ASSOC)['valor'] ?? 0;
-
-            // 3. % de socios nuevos vs. mes anterior
+            // 1. Socios activos: los que entrenaron en los últimos 7 días, sobre el total de socios inscriptos
             $stmt = $pdo->prepare("
                 SELECT
-                  (SELECT COUNT(*) FROM Usuario WHERE fecha_alta >= CURDATE() - INTERVAL 30 DAY $filtroU) AS actual,
-                  (SELECT COUNT(*) FROM Usuario WHERE fecha_alta >= CURDATE() - INTERVAL 60 DAY
-                     AND fecha_alta < CURDATE() - INTERVAL 30 DAY $filtroU) AS anterior
+                  (SELECT COUNT(DISTINCT a.ID_Usuario)
+                     FROM Asistencia a
+                     JOIN Usuario u ON u.ID_Usuario = a.ID_Usuario
+                    WHERE a.fecha >= CURDATE() - INTERVAL 7 DAY AND $filtroSocio) AS activos,
+                  (SELECT COUNT(*) FROM Usuario u WHERE $filtroSocio) AS total
             ");
             $stmt->execute($bindG);
-            $nuevos = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $fila = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $activosCant = (int) ($fila['activos'] ?? 0);
+            $sociosTotal = (int) ($fila['total'] ?? 0);
+            $activos = $sociosTotal > 0 ? round($activosCant / $sociosTotal * 100, 1) : 0;
 
-            $pct_nuevos = ($nuevos && $nuevos['anterior'] > 0)
-                ? round((($nuevos['actual'] - $nuevos['anterior']) / $nuevos['anterior']) * 100, 1)
-                : null;
+            // 2 y 3. Socios nuevos y bajas: altas y bajas reales del gimnasio (tabla Movimiento_Socio)
+            //        en los últimos 30 días y en los 30 días anteriores.
+            $filtroM = $idGimnasio !== null ? "WHERE m.ID_Gimnasio = :g" : "";
+            $stmt = $pdo->prepare("
+                SELECT
+                  SUM(m.tipo = 'alta' AND m.fecha >= CURDATE() - INTERVAL 30 DAY) AS altas_actual,
+                  SUM(m.tipo = 'alta' AND m.fecha >= CURDATE() - INTERVAL 60 DAY
+                      AND m.fecha < CURDATE() - INTERVAL 30 DAY) AS altas_anterior,
+                  SUM(m.tipo = 'baja' AND m.fecha >= CURDATE() - INTERVAL 30 DAY) AS bajas_actual,
+                  SUM(m.tipo = 'baja' AND m.fecha >= CURDATE() - INTERVAL 60 DAY
+                      AND m.fecha < CURDATE() - INTERVAL 30 DAY) AS bajas_anterior
+                FROM Movimiento_Socio m
+                $filtroM
+            ");
+            $stmt->execute($bindG);
+            $movimientos = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             // 4. % de ejercicios del catálogo que se usaron alguna vez
             //    (numerador acotado al gym si corresponde; el catálogo de Ejercicio es global)
@@ -156,21 +155,19 @@ class AdminController
 
             // ---------- GRÁFICOS ----------
 
-            // 1. Tipos de actividad usados (vía Historial -> Ejercitacion -> Rutina -> Clase)
+            // 1. Socios por objetivo (la clase que eligió cada socio: Hipertrofia, Tonificación, etc.)
             $stmt = $pdo->prepare("
-                SELECT c.nombre AS actividad, COUNT(DISTINCT h.ID_Historial) AS cantidad
-                FROM Historial h
-                $filtroJoinU
-                JOIN Ejercitacion ej ON ej.ID_Ejercicio = h.ID_Ejercicio
-                JOIN Rutina r ON r.ID_Rutina = ej.ID_Rutina
-                JOIN Clase c ON c.ID_Clase = r.ID_Clase
-                GROUP BY c.nombre
+                SELECT COALESCE(c.nombre, 'Sin objetivo') AS objetivo, COUNT(*) AS cantidad
+                FROM Usuario u
+                LEFT JOIN Clase c ON c.ID_Clase = u.ID_Clase
+                WHERE $filtroSocio
+                GROUP BY objetivo
                 ORDER BY cantidad DESC
             ");
             $stmt->execute($bindG);
-            $actividades = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $objetivos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // 2. Asistencia por día de la semana — vía Asistencia (1=Domingo ... 7=Sábado)
+            // 2. Entrenamientos por día de la semana — vía Asistencia (1=Domingo ... 7=Sábado)
             $stmt = $pdo->prepare("
                 SELECT DAYOFWEEK(a.fecha) AS orden, COUNT(*) AS asistencias
                 FROM Asistencia a
@@ -181,17 +178,41 @@ class AdminController
             $stmt->execute($bindG);
             $dias_semana = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // 3. Turno mañana vs. tarde — directo desde Asistencia.turno
+            // 3. Frecuencia semanal: cuántos días por semana entrena cada socio, en promedio,
+            //    en las últimas 4 semanas (28 días, hoy incluido). Los socios sin entrenamientos
+            //    también cuentan (LEFT JOIN), en el grupo "sin".
+            //    Días en 28 días -> promedio semanal: 0 | 1-3 (<1) | 4-9 (1 a 2) | 10-17 (3 a 4) | 18+ (5 o más)
             $stmt = $pdo->prepare("
                 SELECT
-                  CASE a.turno WHEN 'M' THEN 'Mañana' WHEN 'T' THEN 'Tarde' ELSE 'Sin dato' END AS turno,
+                  CASE
+                    WHEN dias = 0  THEN 'sin'
+                    WHEN dias < 4  THEN 'menos_1'
+                    WHEN dias < 10 THEN '1_a_2'
+                    WHEN dias < 18 THEN '3_a_4'
+                    ELSE '5_o_mas'
+                  END AS rango,
                   COUNT(*) AS cantidad
-                FROM Asistencia a
-                WHERE a.turno IS NOT NULL $filtroA
-                GROUP BY a.turno
+                FROM (
+                  SELECT u.ID_Usuario, COUNT(DISTINCT a.fecha) AS dias
+                  FROM Usuario u
+                  LEFT JOIN Asistencia a
+                         ON a.ID_Usuario = u.ID_Usuario
+                        AND a.fecha >= CURDATE() - INTERVAL 27 DAY
+                  WHERE $filtroSocio
+                  GROUP BY u.ID_Usuario
+                ) t
+                GROUP BY rango
             ");
             $stmt->execute($bindG);
-            $turnos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            // Orden fijo, con 0 en los grupos que no tengan socios
+            $conteo = ['sin' => 0, 'menos_1' => 0, '1_a_2' => 0, '3_a_4' => 0, '5_o_mas' => 0];
+            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $fila) {
+                $conteo[$fila['rango']] = (int) $fila['cantidad'];
+            }
+            $frecuencia_semanal = [];
+            foreach ($conteo as $rango => $cantidad) {
+                $frecuencia_semanal[] = ['rango' => $rango, 'cantidad' => $cantidad];
+            }
 
             // 4. Top 10 ejercicios más usados
             $stmt = $pdo->prepare("
@@ -208,9 +229,24 @@ class AdminController
 
             // Stats generales (acotados al gym cuando corresponde)
             $totalUsuarios = $idGimnasio !== null ? Usuario::where('ID_Gimnasio', $idGimnasio)->count() : Usuario::count();
-            $totalRutinas = Rutina::count();
+            // Rutinas: las globales (catálogo) + las personales de socios del gym. Ejercicios: catálogo global.
+            if ($idGimnasio !== null) {
+                $stmt = $pdo->prepare("
+                    SELECT COUNT(*) FROM Rutina r
+                    LEFT JOIN Usuario u ON u.ID_Usuario = r.ID_Usuario
+                    WHERE r.ID_Usuario IS NULL OR u.ID_Gimnasio = :g
+                ");
+                $stmt->execute($bindG);
+                $totalRutinas = (int) $stmt->fetchColumn();
+
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM Historial h $filtroJoinU");
+                $stmt->execute($bindG);
+                $totalEntrenamientos = (int) $stmt->fetchColumn();
+            } else {
+                $totalRutinas = Rutina::count();
+                $totalEntrenamientos = Historial::count();
+            }
             $totalEjercicios = Ejercicio::count();
-            $totalEntrenamientos = Historial::count();
 
             return response()->json([
                 'ok' => true,
@@ -222,15 +258,23 @@ class AdminController
                 ],
                 'numeros' => [
                     'porcentaje_activos'           => (float) ($activos ?? 0),
-                    'promedio_por_dia'             => (float) ($promedio_dia ?? 0),
-                    'porcentaje_nuevos_vs_mes'     => $pct_nuevos,
+                    'socios_activos'               => $activosCant,
+                    'socios_total'                 => $sociosTotal,
+                    'socios_nuevos'                => [
+                        'actual'   => (int) ($movimientos['altas_actual'] ?? 0),
+                        'anterior' => (int) ($movimientos['altas_anterior'] ?? 0),
+                    ],
+                    'bajas'                        => [
+                        'actual'   => (int) ($movimientos['bajas_actual'] ?? 0),
+                        'anterior' => (int) ($movimientos['bajas_anterior'] ?? 0),
+                    ],
                     'porcentaje_ejercicios_usados' => (float) ($ejercicios_usados ?? 0),
                 ],
                 'graficos' => [
-                    'actividades'    => $actividades,
-                    'dias_semana'    => $dias_semana,
-                    'turnos'         => $turnos,
-                    'top_ejercicios' => $top_ejercicios,
+                    'objetivos'          => $objetivos,
+                    'dias_semana'        => $dias_semana,
+                    'frecuencia_semanal' => $frecuencia_semanal,
+                    'top_ejercicios'     => $top_ejercicios,
                 ]
             ]);
         } catch (\Throwable $e) {
