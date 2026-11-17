@@ -12,7 +12,7 @@ class RutinaController
 {
     public function obtenerRutinas(Request $request)
     {
-        $uid = $request->query('user_id') ?: $request->query('id', 0);
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
         try {
             if ($uid > 0) {
@@ -46,10 +46,10 @@ class RutinaController
 
     public function misRutinas(Request $request)
     {
-        $uid = $request->query('user_id') ?: $request->query('id', 0);
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-        if (!$uid) {
-            return response()->json(['ok' => false, 'msg' => 'Falta ID de usuario']);
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
         }
 
         try {
@@ -78,7 +78,7 @@ class RutinaController
     public function detalle(Request $request)
     {
         $rid = $request->query('id') ?: $request->query('ID_Rutina', 0);
-        $uid = $request->query('user_id') ?: $request->query('ID_Usuario', 0);
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
         if (!$rid) {
             return response()->json(['ok' => false, 'msg' => 'Falta ID de rutina']);
@@ -118,12 +118,16 @@ class RutinaController
 
     public function store(Request $request)
     {
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario');
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
         $nombre = trim($request->input('nombre', ''));
         $ejercicios = $request->input('ejercicios', []);
         $rutinaId = $request->input('id_rutina') ?: $request->input('ID_Rutina', 0);
 
-        if (!$uid || !$nombre || empty($ejercicios)) {
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+        }
+
+        if (!$nombre || empty($ejercicios)) {
             return response()->json(['ok' => false, 'msg' => 'Faltan datos']);
         }
 
@@ -172,10 +176,14 @@ class RutinaController
 
     public function toggleFavorito(Request $request)
     {
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario');
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
         $rid = $request->input('rutina_id') ?: $request->input('ID_Rutina');
 
-        if (!$uid || !$rid) {
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+        }
+
+        if (!$rid) {
             return response()->json(['ok' => false, 'msg' => 'Parámetros faltantes']);
         }
 
@@ -200,9 +208,13 @@ class RutinaController
     public function destroy(Request $request)
     {
         $rid = $request->input('id_rutina') ?: $request->input('rutina_id') ?: $request->input('ID_Rutina', 0);
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario', 0);
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-        if (!$rid || !$uid) {
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+        }
+
+        if (!$rid) {
             return response()->json(['ok' => false, 'msg' => 'Faltan parámetros']);
         }
 

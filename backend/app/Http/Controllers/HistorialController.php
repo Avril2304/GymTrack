@@ -9,10 +9,10 @@ class HistorialController
 {
     public function index(Request $request)
     {
-        $uid = $request->query('user_id') ?: $request->query('id', 0);
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-        if (!$uid) {
-            return response()->json(['ok' => false, 'msg' => 'Falta ID de usuario']);
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
         }
 
         $historial = Historial::with('ejercicio')
@@ -30,12 +30,12 @@ class HistorialController
 
     public function store(Request $request)
     {
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario');
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
         $fecha = $request->input('fecha', date('Y-m-d'));
         $items = $request->input('ejercicios', []);
 
-        if (!$uid) {
-            return response()->json(['ok' => false, 'msg' => 'Falta ID de usuario']);
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
         }
 
         if (!empty($items) && is_array($items)) {
@@ -124,7 +124,15 @@ class HistorialController
     public function destroy(Request $request)
     {
         $hid = $request->input('id') ?: $request->input('id_historial') ?: $request->input('ID_Historial');
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario');
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+        }
+
+        if (!$hid) {
+            return response()->json(['ok' => false, 'msg' => 'Falta ID de historial']);
+        }
 
         $registro = Historial::where('ID_Historial', $hid)->where('ID_Usuario', $uid)->first();
 

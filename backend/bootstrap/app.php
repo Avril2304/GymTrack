@@ -74,13 +74,14 @@ require_once dirname(__DIR__, 2) . '/public_html/api/sesion.php';
 gt_iniciar_sesion();
 
 $rutasPublicas = [
-    '/', '/login', '/login.php', '/register', '/register.php',
+    '/', '/login', '/login.php', '/logout', '/logout.php', '/register', '/register.php',
     '/clases', '/clases.php', '/obtener_clases.php',
     '/ejercicios', '/ejercicios.php', '/obtener_ejercicios.php',
 ];
 $rutasConControlPropio = [
     '/admin_usuarios.php', '/obtener_usuarios.php', '/admin_dashboard.php', '/dashboard.php',
     '/asignar_gimnasio.php', '/obtener_gimnasios.php', '/crear_gimnasio.php', '/mi_gimnasio.php',
+    '/actualizar_gimnasio.php',
     '/buscar_gimnasio.php', '/salir_gimnasio.php', '/crear_solicitud.php', '/mi_solicitud.php',
     '/cancelar_solicitud.php', '/solicitudes_pendientes.php', '/resolver_solicitud.php', '/buscar_usuario.php',
 ];
@@ -102,6 +103,11 @@ switch ($uri) {
     case '/login':
     case '/login.php':
         (new App\Http\Controllers\AuthController)->login(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/logout':
+    case '/logout.php':
+        (new App\Http\Controllers\AuthController)->logout();
         break;
 
     case '/register':
@@ -217,6 +223,11 @@ switch ($uri) {
     case '/gimnasio/crear':
     case '/crear_gimnasio.php':
         (new App\Http\Controllers\SolicitudController)->crearGimnasio(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/gimnasio/actualizar':
+    case '/actualizar_gimnasio.php':
+        (new App\Http\Controllers\SolicitudController)->actualizarGimnasio(new Illuminate\Http\Request($_REQUEST));
         break;
 
     case '/gimnasio/mio':

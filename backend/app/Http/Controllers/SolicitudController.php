@@ -30,6 +30,19 @@ class SolicitudController
         });
     }
 
+    public function actualizarGimnasio(Request $request)
+    {
+        return $this->ejecutar('POST', function ($pdo, $uid) use ($request) {
+            $in = [];
+            foreach (['nombre', 'direccion', 'telefono', 'mail', 'identificador'] as $campo) {
+                if ($request->has($campo)) {
+                    $in[$campo] = $request->input($campo);
+                }
+            }
+            return \gt_gimnasio_actualizar($pdo, $uid, $in);
+        });
+    }
+
     public function miGimnasio()
     {
         return $this->ejecutar('GET', function ($pdo, $uid) {

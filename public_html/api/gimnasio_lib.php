@@ -248,6 +248,87 @@ function gt_gimnasio_crear(PDO $pdo, $adminId, array $in) {
     }
 }
 
+// POST: el admin actualiza los datos de SU gimnasio (nombre, direccion, telefono, mail, identificador).
+function gt_gimnasio_actualizar(PDO $pdo, $adminId, array $in) {
+    $ctx = gt_lib_admin_con_gimnasio($pdo, $adminId);
+    if (isset($ctx['error'])) {
+        return $ctx['error'];
+    }
+    $idGym = $ctx['gimnasio'];
+
+    // Obtener datos actuales del gimnasio
+    $st = $pdo->prepare("SELECT * FROM Gimnasio WHERE ID_Gimnasio = ? LIMIT 1");
+    $st->execute([$idGym]);
+    $gymActual = $st->fetch();
+    if (!$gymActual) {
+        return gt_res_error(404, 'Gimnasio no encontrado.');
+    }
+
+    $nombre    = array_key_exists('nombre', $in) ? trim((string) $in['nombre']) : $gymActual['nombre'];
+    $direccion = array_key_exists('direccion', $in) ? trim((string) $in['direccion']) : ($gymActual['direccion'] ?? '');
+    $telefono  = array_key_exists('telefono', $in) ? trim((string) $in['telefono']) : ($gymActual['telefono'] ?? '');
+    $mail      = array_key_exists('mail', $in) ? trim((string) $in['mail']) : ($gymActual['mail'] ?? '');
+    
+    if (array_key_exists('identificador', $in) && trim((string) $in['identificador']) !== '') {
+        $ident = gt_normalizar_identificador($in['identificador']);
+    } else {
+        $ident = $gymActual['identificador'];
+    }
+
+    if ($nombre === '' || gt_largo($nombre) > 100) {
+        return gt_res_error(400, 'Ingresá el nombre del gimnasio (hasta 100 caracteres).');
+    }
+    if (gt_largo($direccion) > 150 || gt_largo($telefono) > 30) {
+        return gt_res_error(400, 'La dirección o el teléfono son demasiado largos.');
+    }
+    if ($mail !== '' && (gt_largo($mail) > 60 || !filter_var($mail, FILTER_VALIDATE_EMAIL))) {
+        return gt_res_error(400, 'El mail del gimnasio no es válido.');
+    }
+    if ($ident === '' || !gt_identificador_valido($ident)) {
+        return gt_res_error(400, 'El identificador debe tener entre 3 y 60 caracteres: letras minúsculas, números y guiones.');
+    }
+
+    // Verificar si el identificador cambió y si ya está en uso por otro gimnasio
+    if ($ident !== $gymActual['identificador']) {
+        $stCheck = $pdo->prepare("SELECT 1 FROM Gimnasio WHERE identificador = ? AND ID_Gimnasio != ? LIMIT 1");
+        $stCheck->execute([$ident, $idGym]);
+        if ($stCheck->fetch()) {
+            return gt_res_error(409, 'Ese identificador ya está en uso por otro gimnasio. Elegí otro.');
+        }
+    }
+
+    try {
+        return gt_tx($pdo, function () use ($pdo, $idGym, $nombre, $direccion, $telefono, $mail, $ident) {
+            $pdo->prepare("
+                UPDATE Gimnasio
+                SET nombre = ?, identificador = ?, direccion = ?, telefono = ?, mail = ?
+                WHERE ID_Gimnasio = ?
+            ")->execute([
+                $nombre,
+                $ident,
+                $direccion !== '' ? $direccion : null,
+                $telefono !== '' ? $telefono : null,
+                $mail !== '' ? $mail : null,
+                $idGym
+            ]);
+
+            return gt_res_ok('Gimnasio actualizado correctamente.', [
+                'ID_Gimnasio'   => $idGym,
+                'nombre'        => $nombre,
+                'identificador' => $ident,
+                'direccion'     => $direccion,
+                'telefono'      => $telefono,
+                'mail'          => $mail
+            ]);
+        });
+    } catch (PDOException $e) {
+        if ($e->getCode() === '23000') {
+            return gt_res_error(409, 'Ese identificador ya está en uso por otro gimnasio.');
+        }
+        throw $e;
+    }
+}
+
 // GET: datos del gimnasio del admin (o data = null si todavia no lo creo), con contadores.
 function gt_gimnasio_mio(PDO $pdo, $adminId) {
     $ctx = gt_lib_admin($pdo, $adminId);

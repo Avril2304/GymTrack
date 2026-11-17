@@ -10,10 +10,10 @@ class PerfilController
 {
     public function show(Request $request)
     {
-        $uid = $request->query('user_id') ?: $request->query('id', 0);
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-        if (!$uid) {
-            return response()->json(['ok' => false, 'msg' => 'Falta ID de usuario']);
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
         }
 
         $usuario = Usuario::with('clase')->find($uid);
@@ -65,7 +65,10 @@ class PerfilController
 
     public function update(Request $request)
     {
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario');
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+        }
         $usuario = Usuario::find($uid);
 
         if (!$usuario) {
@@ -111,7 +114,10 @@ class PerfilController
 
     public function subirFoto(Request $request)
     {
-        $uid = $request->input('user_id') ?: $request->input('ID_Usuario');
+        $uid = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+        if ($uid <= 0) {
+            return response()->json(['ok' => false, 'msg' => 'No autorizado. Iniciá sesión primero.'], 401);
+        }
         $usuario = Usuario::find($uid);
 
         if (!$usuario) {
