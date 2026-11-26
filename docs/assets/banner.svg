@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="GymTrack — Plataforma de entrenamiento y gestión de gimnasios">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="55%" stop-color="#111824"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <radialGradient id="glowLeft" cx="15%" cy="50%" r="42%">
+      <stop offset="0%" stop-color="#0d6efd" stop-opacity="0.28"/>
+      <stop offset="60%" stop-color="#0dcaf0" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0d1117" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowRight" cx="88%" cy="22%" r="36%">
+      <stop offset="0%" stop-color="#0dcaf0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#161b22" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d6efd"/>
+      <stop offset="100%" stop-color="#0dcaf0"/>
+    </linearGradient>
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <pattern id="subtleGrid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#263042" stroke-width="0.75" stroke-opacity="0.45"/>
+    </pattern>
+    <linearGradient id="gridFade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.55"/>
+    </linearGradient>
+    <mask id="gridMask">
+      <rect x="640" y="8" width="552" height="304" rx="20" fill="url(#gridFade)"/>
+    </mask>
+  </defs>
+
+  <!-- Main Card -->
+  <rect x="8" y="8" width="1184" height="304" rx="20" fill="url(#bgGrad)" stroke="#263042" stroke-width="1.5"/>
+  <rect x="8" y="8" width="1184" height="304" rx="20" fill="url(#glowLeft)"/>
+  <rect x="8" y="8" width="1184" height="304" rx="20" fill="url(#glowRight)"/>
+
+  <!-- Subtle Geometric Grid Accent on Right -->
+  <g mask="url(#gridMask)">
+    <rect x="640" y="8" width="552" height="304" fill="url(#subtleGrid)"/>
+    <circle cx="1090" cy="88" r="76" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.18"/>
+    <circle cx="1090" cy="88" r="118" fill="none" stroke="#0d6efd" stroke-width="1" stroke-opacity="0.12"/>
+  </g>
+
+  <!-- Left Dumbbell Emblem Badge -->
+  <g transform="translate(64, 72)">
+    <rect x="0" y="0" width="176" height="176" rx="36" fill="#131a26" stroke="#263b5e" stroke-width="1.5"/>
+    <rect x="6" y="6" width="164" height="164" rx="31" fill="none" stroke="#0dcaf0" stroke-opacity="0.14" stroke-width="1"/>
+    <!-- Vector Dumbbell -->
+    <g fill="url(#brandGrad)">
+      <!-- Bar -->
+      <rect x="64" y="79" width="48" height="18" rx="6"/>
+      <!-- Left Plates -->
+      <rect x="18" y="74" width="10" height="28" rx="5"/>
+      <rect x="28" y="56" width="14" height="64" rx="7"/>
+      <rect x="44" y="42" width="18" height="92" rx="8"/>
+      <!-- Right Plates -->
+      <rect x="114" y="42" width="18" height="92" rx="8"/>
+      <rect x="134" y="56" width="14" height="64" rx="7"/>
+      <rect x="148" y="74" width="10" height="28" rx="5"/>
+    </g>
+  </g>
+
+  <!-- Brand Typography -->
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+    <text x="282" y="96" fill="#38bdf8" font-size="13" font-weight="700" letter-spacing="2.4">
+      PLATAFORMA DE ENTRENAMIENTO INTELIGENTE
+    </text>
+
+    <text x="280" y="158" fill="url(#titleGrad)" font-size="64" font-weight="800" letter-spacing="-1.2">
+      GymTrack
+    </text>
+
+    <text x="282" y="198" fill="#c9d1d9" font-size="21" font-weight="400">
+      Gestión de gimnasios, seguimiento de entrenamientos y Coach IA
+    </text>
+
+    <!-- Feature Chips -->
+    <g font-size="13.5" font-weight="600" text-anchor="middle">
+      <rect x="282" y="224" width="156" height="32" rx="16" fill="#182232" stroke="#2c4162" stroke-width="1"/>
+      <text x="360" y="245" fill="#93c5fd">PHP 8 · Mini-ORM</text>
+
+      <rect x="450" y="224" width="156" height="32" rx="16" fill="#182232" stroke="#2c4162" stroke-width="1"/>
+      <text x="528" y="245" fill="#93c5fd">MariaDB / MySQL</text>
+
+      <rect x="618" y="224" width="152" height="32" rx="16" fill="#132a38" stroke="#1f536e" stroke-width="1"/>
+      <text x="694" y="245" fill="#67e8f9">OpenAI Coach IA</text>
+
+      <rect x="782" y="224" width="136" height="32" rx="16" fill="#182232" stroke="#2c4162" stroke-width="1"/>
+      <text x="850" y="245" fill="#cbd5e1">cPanel Ready</text>
+    </g>
+  </g>
+</svg>
