@@ -23,7 +23,9 @@ class Usuario extends Model
         'mail',
         'telefono',
         'clave',
-        'foto'
+        'foto',
+        'fecha_alta',
+        'email_verificado'
     ];
 
     protected $hidden = [

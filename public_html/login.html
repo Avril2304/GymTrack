@@ -119,6 +119,47 @@
 
     /* MODAL */
     .modal-content-hevy { background-color: var(--bg-card); color: white; border: 1px solid #333; border-radius: 16px; }
+
+    /* BANNER VERIFICACIÓN */
+    .verify-banner {
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        border: 1px solid #3a3a3c;
+        background-color: #232326;
+        color: #e5e5ea;
+    }
+    .verify-banner.is-ok {
+        border-color: rgba(25, 135, 84, 0.55);
+        background-color: rgba(25, 135, 84, 0.14);
+        color: #a3e6b7;
+    }
+    .verify-banner.is-warn {
+        border-color: rgba(13, 110, 253, 0.55);
+        background-color: rgba(13, 110, 253, 0.14);
+        color: #b6d4fe;
+    }
+    .verify-banner.is-error {
+        border-color: rgba(220, 53, 69, 0.55);
+        background-color: rgba(220, 53, 69, 0.14);
+        color: #f5b5bc;
+    }
+    .btn-resend-verif {
+        background: transparent;
+        border: 1px solid currentColor;
+        color: inherit;
+        border-radius: 50px;
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 8px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-resend-verif:hover { opacity: 0.85; }
+    .btn-resend-verif:disabled { opacity: 0.5; cursor: not-allowed; }
     
     /* ANIMACIÓN */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } 
@@ -136,6 +177,15 @@
     <div class="auth-tabs">
         <div class="auth-tab active" id="tab-login" onclick="switchMode('login')">Ingresar</div>
         <div class="auth-tab" id="tab-register" onclick="switchMode('register')">Registrarse</div>
+    </div>
+
+    <div id="verify-banner" class="verify-banner" style="display: none;">
+        <div id="verify-banner-text"></div>
+        <div id="verify-resend-wrap" style="display: none;">
+            <input type="email" id="verify-resend-email" class="form-control form-control-dark mt-2" placeholder="Tu correo electrónico" style="display: none;">
+            <button type="button" id="btn-resend-verif" class="btn-resend-verif">Reenviar correo de verificación</button>
+            <div id="verify-resend-status" class="small mt-2"></div>
+        </div>
     </div>
 
     <form id="login-form">
@@ -197,11 +247,101 @@
         new bootstrap.Modal(document.getElementById('customAlertModal')).show();
     }
 
-    // Si nos mandaron acá porque la sesión venció (ver apiFetch en las otras pantallas), avisamos.
-    document.addEventListener('DOMContentLoaded', () => {
+    function showVerifyBanner(type, msg, resendOptions = null) {
+        const banner = document.getElementById('verify-banner');
+        const textEl = document.getElementById('verify-banner-text');
+        const wrap = document.getElementById('verify-resend-wrap');
+        const emailInput = document.getElementById('verify-resend-email');
+        const btn = document.getElementById('btn-resend-verif');
+        const statusEl = document.getElementById('verify-resend-status');
+
+        banner.className = 'verify-banner' + (type ? ' is-' + type : '');
+        textEl.innerText = msg;
+        statusEl.innerText = '';
+
+        if (resendOptions && resendOptions.showResend) {
+            wrap.style.display = 'block';
+            const presetEmail = (resendOptions.email || '').trim();
+            if (presetEmail) {
+                emailInput.value = presetEmail;
+                emailInput.style.display = 'none';
+            } else {
+                emailInput.value = '';
+                emailInput.style.display = 'block';
+            }
+            btn.disabled = false;
+            btn.innerText = 'Reenviar correo de verificación';
+            btn.onclick = () => reenviarVerificacion(emailInput.value.trim(), btn, statusEl);
+        } else {
+            wrap.style.display = 'none';
+            btn.onclick = null;
+        }
+
+        banner.style.display = 'block';
+    }
+
+    async function reenviarVerificacion(email, btn, statusEl) {
+        if (!email) {
+            statusEl.innerText = 'Ingresá tu correo electrónico arriba para reenviar el enlace.';
+            return;
+        }
+        const oldText = btn.innerText;
+        btn.innerText = 'Enviando...';
+        btn.disabled = true;
+        statusEl.innerText = '';
+        try {
+            const res = await fetch('api/reenviar_verificacion.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            statusEl.innerText = data.msg || 'Listo.';
+        } catch (e) {
+            statusEl.innerText = 'Error de conexión al reenviar el correo.';
+        }
+        btn.innerText = oldText;
+        btn.disabled = false;
+    }
+
+    // Si nos mandaron acá porque la sesión venció (ver apiFetch en las otras pantallas),
+    // o desde el enlace de verificación por correo, procesamos el estado inicial.
+    document.addEventListener('DOMContentLoaded', async () => {
         let flash = null;
         try { flash = sessionStorage.getItem('gymtrack_flash'); sessionStorage.removeItem('gymtrack_flash'); } catch (e) {}
         if (flash) showAlert(flash);
+
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('verificar_token');
+        if (token) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            switchMode('login');
+            showVerifyBanner('warn', 'Confirmando tu correo electrónico...');
+            try {
+                const res = await fetch('api/verificar_email.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    if (data.email) {
+                        document.getElementById('email').value = data.email;
+                    }
+                    showVerifyBanner('ok', data.msg || '¡Correo verificado con éxito! Ya podés iniciar sesión.');
+                } else {
+                    const puedeReenviar = data.codigo === 'TOKEN_EXPIRADO' || data.codigo === 'TOKEN_USADO' || data.codigo === 'TOKEN_INVALIDO';
+                    showVerifyBanner('error', data.msg || 'No pudimos verificar el enlace.', {
+                        showResend: puedeReenviar,
+                        email: data.email || ''
+                    });
+                }
+            } catch (e) {
+                showVerifyBanner('error', 'Error de conexión al verificar el correo.');
+            }
+        }
     });
 
     // --- LOGIN (MODIFICADO CON SEMÁFORO) ---
@@ -209,9 +349,15 @@
         e.preventDefault();
         const btn = this.querySelector('button'); const oldText = btn.innerText; 
         btn.innerText = 'Cargando...'; btn.disabled = true;
+        const emailIngresado = document.getElementById('email').value.trim();
         
         try {
-            const res = await fetch('api/login.php', { method: 'POST', credentials: 'same-origin', body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value }) });
+            const res = await fetch('api/login.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailIngresado, password: document.getElementById('password').value })
+            });
             const data = await res.json();
             
             if (data.ok) { 
@@ -228,6 +374,9 @@
                 }
             } 
             else { 
+                if (data.codigo === 'EMAIL_NO_VERIFICADO') {
+                    showVerifyBanner('warn', data.msg, { showResend: true, email: emailIngresado });
+                }
                 showAlert(data.msg); 
             }
         } catch (e) { 
@@ -243,18 +392,33 @@
         e.preventDefault();
         const btn = this.querySelector('button'); const oldText = btn.innerText; 
         btn.innerText = 'Registrando...'; btn.disabled = true;
+        const emailRegistro = document.getElementById('signup-email').value.trim();
         const payload = {
             nombre: document.getElementById('signup-nombre').value,
             apellido: document.getElementById('signup-apellido').value,
             dni: document.getElementById('signup-dni').value,
             fecha_nacimiento: document.getElementById('signup-fecha').value,
-            email: document.getElementById('signup-email').value,
+            email: emailRegistro,
             password: document.getElementById('signup-password').value
         };
         try {
-            const res = await fetch('api/register.php', { method: 'POST', body: JSON.stringify(payload) });
+            const res = await fetch('api/register.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
             const data = await res.json();
-            if (data.ok) { showAlert("Cuenta creada con éxito. Por favor inicia sesión."); switchMode('login'); document.getElementById('signup-form').reset(); } 
+            if (data.ok) {
+                const msg = data.msg || "Cuenta creada con éxito. Por favor inicia sesión.";
+                showAlert(msg);
+                if (data.requiere_verificacion) {
+                    document.getElementById('email').value = emailRegistro;
+                    showVerifyBanner('warn', msg, { showResend: true, email: emailRegistro });
+                }
+                switchMode('login');
+                document.getElementById('signup-form').reset();
+            } 
             else { showAlert(data.msg); }
         } catch (e) { showAlert("Error de conexión"); }
         btn.innerText = oldText; btn.disabled = false;

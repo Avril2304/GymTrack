@@ -112,6 +112,14 @@ class AuthController
             }
         }
 
+        if (($usuario->email_verificado ?? 'S') === 'N') {
+            return response()->json([
+                'ok'     => false,
+                'codigo' => 'EMAIL_NO_VERIFICADO',
+                'msg'    => 'Tu correo todavía no fue verificado. Revisá tu casilla (o spam) para confirmar tu cuenta.'
+            ], 403);
+        }
+
         if (session_status() === PHP_SESSION_NONE) {
             if (function_exists('gt_iniciar_sesion')) {
                 gt_iniciar_sesion();
@@ -269,10 +277,92 @@ class AuthController
             return response()->json(['ok' => false, 'msg' => 'No se pudo crear la cuenta. Probá de nuevo en unos minutos.']);
         }
 
+        $verif = ['activo' => false, 'enviado' => false];
+        $rutaMailer = dirname(__DIR__, 4) . '/public_html/api/mailer_lib.php';
+        if (file_exists($rutaMailer)) {
+            require_once $rutaMailer;
+            try {
+                $verif = \gt_verificacion_crear_y_enviar(
+                    Capsule::getPdo(),
+                    (int) $usuario->ID_Usuario,
+                    $nombre,
+                    $mail,
+                    $apellido,
+                    true
+                );
+            } catch (\Throwable $eMail) {
+                error_log('register verificacion mail: ' . $eMail->getMessage());
+            }
+        }
+
+        if (!empty($verif['activo'])) {
+            if (!empty($verif['enviado'])) {
+                return response()->json([
+                    'ok'                    => true,
+                    'requiere_verificacion' => true,
+                    'mail_enviado'          => true,
+                    'msg'                   => 'Cuenta creada. Te enviamos un correo a ' . $mail . ' para confirmar tu cuenta. Revisá tu bandeja de entrada o spam.',
+                    'user_id'               => $usuario->ID_Usuario
+                ]);
+            }
+            return response()->json([
+                'ok'                    => true,
+                'requiere_verificacion' => true,
+                'mail_enviado'          => false,
+                'msg'                   => 'Cuenta creada, pero no pudimos enviar el correo de confirmación en este momento. Usá "Reenviar correo de verificación" desde la pantalla de ingreso.',
+                'user_id'               => $usuario->ID_Usuario
+            ]);
+        }
+
         return response()->json([
-            'ok' => true,
-            'msg' => 'Usuario registrado exitosamente',
-            'user_id' => $usuario->ID_Usuario
+            'ok'                    => true,
+            'requiere_verificacion' => false,
+            'mail_enviado'          => false,
+            'msg'                   => 'Usuario registrado exitosamente',
+            'user_id'               => $usuario->ID_Usuario
         ]);
+    }
+
+    public function verificarEmail(Request $request)
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            return response()->json(['ok' => false, 'msg' => 'Método no permitido.'], 405);
+        }
+
+        $rutaMailer = dirname(__DIR__, 4) . '/public_html/api/mailer_lib.php';
+        if (!file_exists($rutaMailer)) {
+            return response()->json(['ok' => false, 'msg' => 'No se encontró public_html/api/mailer_lib.php.'], 500);
+        }
+        require_once $rutaMailer;
+
+        try {
+            $res = \gt_verificacion_confirmar(Capsule::getPdo(), $request->input('token', ''));
+            return response()->json($res['body'], $res['status']);
+        } catch (\Throwable $e) {
+            error_log('AuthController::verificarEmail: ' . $e->getMessage());
+            return response()->json(['ok' => false, 'msg' => 'No se pudo completar la verificación.'], 500);
+        }
+    }
+
+    public function reenviarVerificacion(Request $request)
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            return response()->json(['ok' => false, 'msg' => 'Método no permitido.'], 405);
+        }
+
+        $rutaMailer = dirname(__DIR__, 4) . '/public_html/api/mailer_lib.php';
+        if (!file_exists($rutaMailer)) {
+            return response()->json(['ok' => false, 'msg' => 'No se encontró public_html/api/mailer_lib.php.'], 500);
+        }
+        require_once $rutaMailer;
+
+        try {
+            $mail = $request->input('email') ?: $request->input('mail', '');
+            $res = \gt_verificacion_reenviar(Capsule::getPdo(), $mail);
+            return response()->json($res['body'], $res['status']);
+        } catch (\Throwable $e) {
+            error_log('AuthController::reenviarVerificacion: ' . $e->getMessage());
+            return response()->json(['ok' => false, 'msg' => 'No se pudo reenviar el correo de verificación.'], 500);
+        }
     }
 }

@@ -75,6 +75,7 @@ gt_iniciar_sesion();
 
 $rutasPublicas = [
     '/', '/login', '/login.php', '/logout', '/logout.php', '/register', '/register.php',
+    '/verificar-email', '/verificar_email.php', '/reenviar-verificacion', '/reenviar_verificacion.php',
     '/clases', '/clases.php', '/obtener_clases.php',
     '/ejercicios', '/ejercicios.php', '/obtener_ejercicios.php',
 ];
@@ -113,6 +114,16 @@ switch ($uri) {
     case '/register':
     case '/register.php':
         (new App\Http\Controllers\AuthController)->register(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/verificar-email':
+    case '/verificar_email.php':
+        (new App\Http\Controllers\AuthController)->verificarEmail(new Illuminate\Http\Request($_REQUEST));
+        break;
+
+    case '/reenviar-verificacion':
+    case '/reenviar_verificacion.php':
+        (new App\Http\Controllers\AuthController)->reenviarVerificacion(new Illuminate\Http\Request($_REQUEST));
         break;
 
     case '/clases':

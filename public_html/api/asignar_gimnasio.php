@@ -17,6 +17,7 @@ require_once 'sesion.php';
 gt_iniciar_sesion();
 require_once 'conexion.php';
 require_once __DIR__ . '/movimientos.php'; // altas y bajas de socios (Movimiento_Socio)
+require_once __DIR__ . '/mailer_lib.php';  // avisos de cambio de gimnasio
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     gt_error(405, 'Método no permitido.');
@@ -44,6 +45,7 @@ if ($destino !== null && $destino !== $miGym) {
 
 try {
     // 3. Lectura bloqueada del usuario destino para decidir sin carreras.
+    $notifTipo = null;
     $pdo->beginTransaction();
     $stmt = $pdo->prepare("SELECT ID_Gimnasio, es_admin FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
     $stmt->execute([$userId]);
@@ -69,6 +71,7 @@ try {
             gt_registrar_movimiento($pdo, $userId, $miGym, 'alta', 'admin');
             // Si tenia una solicitud pendiente (a este u otro gimnasio), queda sin efecto.
             $pdo->prepare("UPDATE Solicitud SET estado = 'cancelada', fecha_resolucion = NOW() WHERE ID_Usuario = ? AND estado = 'pendiente'")->execute([$userId]);
+            $notifTipo = 'alta';
         }
     } else {
         // DESVINCULAR: solo socios de mi gimnasio. Mismo error si no existe o es de otro gimnasio,
@@ -79,8 +82,13 @@ try {
         }
         $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = NULL WHERE ID_Usuario = ?")->execute([$userId]);
         gt_registrar_movimiento($pdo, $userId, $miGym, 'baja', 'admin');
+        $notifTipo = 'baja';
     }
     $pdo->commit();
+
+    if ($notifTipo !== null) {
+        gt_notificar_cambio_gimnasio($pdo, $userId, $miGym, $notifTipo, 'admin');
+    }
 
     echo json_encode([
         'ok'  => true,

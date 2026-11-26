@@ -18,8 +18,10 @@ Formato de respuesta: `{ "ok": true|false, "msg": "...", ... }`.
 
 | Endpoint | Metodo | Que hace |
 | --- | --- | --- |
-| `login.php` | POST | Inicia sesion. Limita intentos fallidos por mail e IP |
-| `register.php` | POST | Crea una cuenta de socio |
+| `login.php` | POST | Inicia sesion. Limita intentos fallidos por mail e IP y exige correo verificado si aplica |
+| `register.php` | POST | Crea una cuenta de socio y envia correo de confirmacion cuando SMTP esta activo |
+| `verificar_email.php` | POST | Confirma la cuenta con el `token` enviado por correo |
+| `reenviar_verificacion.php` | POST | Reenvia el correo de confirmacion para una cuenta pendiente |
 | `logout.php` | POST | Cierra la sesion en el servidor y borra la cookie |
 | `obtener_clases.php` | GET | Catalogo de clases |
 | `obtener_ejercicios.php` | GET | Catalogo de ejercicios |
@@ -39,7 +41,7 @@ Formato de respuesta: `{ "ok": true|false, "msg": "...", ... }`.
 | `crear_solicitud.php` | POST | Pide unirse (`identificador`) |
 | `mi_solicitud.php` | GET | Su gimnasio actual y su ultima solicitud |
 | `cancelar_solicitud.php` | POST | Cancela su solicitud pendiente |
-| `salir_gimnasio.php` | POST | Sale de su gimnasio |
+| `salir_gimnasio.php` | POST | Sale de su gimnasio (envia aviso por mail si SMTP esta activo) |
 
 ## Administrador
 
@@ -51,9 +53,9 @@ Formato de respuesta: `{ "ok": true|false, "msg": "...", ... }`.
 | `obtener_usuarios.php` | GET | Socios de **su** gimnasio |
 | `dashboard.php` | GET | Estadisticas de **su** gimnasio: socios activos (y cuantos de cuantos), altas y bajas de los ultimos 30 dias contra los 30 anteriores, y graficos |
 | `solicitudes_pendientes.php` | GET | Solicitudes pendientes de su gimnasio |
-| `resolver_solicitud.php` | POST | Aprueba o rechaza (`id_solicitud`, `accion`) |
+| `resolver_solicitud.php` | POST | Aprueba o rechaza (`id_solicitud`, `accion`; al aprobar avisa por mail al socio) |
 | `buscar_usuario.php` | GET | Busca a una persona por mail exacto |
-| `asignar_gimnasio.php` | POST | Suma un usuario libre a su gimnasio, o saca a un socio suyo |
+| `asignar_gimnasio.php` | POST | Suma un usuario libre a su gimnasio, o saca a un socio suyo (envia aviso por mail) |
 
 ## Crons (`public_html/api/cron_*.php`)
 

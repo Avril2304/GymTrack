@@ -75,6 +75,7 @@ class GimnasioController
         require_once $rutaMovimientos;
 
         try {
+            $notifTipo = null;
             $pdo->beginTransaction();
             $stmt = $pdo->prepare("SELECT ID_Gimnasio, es_admin FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
             $stmt->execute([$userId]);
@@ -100,6 +101,7 @@ class GimnasioController
                     \gt_registrar_movimiento($pdo, $userId, $miGym, 'alta', 'admin');
                     // Si tenia una solicitud pendiente (a este u otro gimnasio), queda sin efecto.
                     $pdo->prepare("UPDATE Solicitud SET estado = 'cancelada', fecha_resolucion = NOW() WHERE ID_Usuario = ? AND estado = 'pendiente'")->execute([$userId]);
+                    $notifTipo = 'alta';
                 }
             } else {
                 // DESVINCULAR: solo socios de mi gimnasio. Mismo error si no existe o es de otro gimnasio.
@@ -109,8 +111,17 @@ class GimnasioController
                 }
                 $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = NULL WHERE ID_Usuario = ?")->execute([$userId]);
                 \gt_registrar_movimiento($pdo, $userId, $miGym, 'baja', 'admin');
+                $notifTipo = 'baja';
             }
             $pdo->commit();
+
+            if ($notifTipo !== null) {
+                $rutaMailer = dirname(__DIR__, 4) . '/public_html/api/mailer_lib.php';
+                if (file_exists($rutaMailer)) {
+                    require_once $rutaMailer;
+                    \gt_notificar_cambio_gimnasio($pdo, $userId, $miGym, $notifTipo, 'admin');
+                }
+            }
         } catch (\Throwable $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();

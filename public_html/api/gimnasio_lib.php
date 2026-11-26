@@ -16,6 +16,7 @@ if (__FILE__ === $_SERVER['SCRIPT_FILENAME']) {
 
 require_once __DIR__ . '/sesion.php';
 require_once __DIR__ . '/movimientos.php'; // altas y bajas de socios (Movimiento_Socio)
+require_once __DIR__ . '/mailer_lib.php';  // avisos de cambio de gimnasio
 
 define('GT_COOLDOWN_DIAS', 7);          // espera tras un rechazo antes de pedir de nuevo al mismo gimnasio
 define('GT_MAX_BUSQUEDAS_GYM', 15);     // buscar_gimnasio: intentos por minuto y sesion
@@ -484,17 +485,23 @@ function gt_solicitud_cancelar(PDO $pdo, $userId) {
 
 // POST: el socio sale de su gimnasio (queda independiente y puede pedir otro).
 function gt_usuario_salir(PDO $pdo, $userId) {
-    return gt_tx($pdo, function () use ($pdo, $userId) {
+    $gymSalido = null;
+    $res = gt_tx($pdo, function () use ($pdo, $userId, &$gymSalido) {
         $st = $pdo->prepare("SELECT ID_Gimnasio FROM Usuario WHERE ID_Usuario = ? FOR UPDATE");
         $st->execute([(int) $userId]);
         $u = $st->fetch();
         if (!$u || $u['ID_Gimnasio'] === null) {
             return gt_res_error(409, 'No pertenecés a ningún gimnasio.');
         }
+        $gymSalido = (int) $u['ID_Gimnasio'];
         $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = NULL WHERE ID_Usuario = ?")->execute([(int) $userId]);
-        gt_registrar_movimiento($pdo, $userId, $u['ID_Gimnasio'], 'baja', 'socio');
+        gt_registrar_movimiento($pdo, $userId, $gymSalido, 'baja', 'socio');
         return gt_res_ok('Saliste del gimnasio.');
     });
+    if ($gymSalido !== null && ($res['body']['ok'] ?? false)) {
+        gt_notificar_cambio_gimnasio($pdo, $userId, $gymSalido, 'baja', 'socio');
+    }
+    return $res;
 }
 
 // ---------------------------------------------------------------- solicitudes (admin)
@@ -528,7 +535,8 @@ function gt_solicitud_resolver(PDO $pdo, $adminId, $idSolicitud, $accion) {
     }
     $miGym = $ctx['gimnasio'];
 
-    return gt_tx($pdo, function () use ($pdo, $miGym, $idSolicitud, $accion) {
+    $notificarAlta = null;
+    $res = gt_tx($pdo, function () use ($pdo, $miGym, $idSolicitud, $accion, &$notificarAlta) {
         // Lectura sin bloqueo para saber de que usuario es; "no existe" y "es de otro gimnasio" dan lo mismo.
         $st = $pdo->prepare("SELECT ID_Usuario FROM Solicitud WHERE ID_Solicitud = ? AND ID_Gimnasio = ? LIMIT 1");
         $st->execute([$idSolicitud, $miGym]);
@@ -573,10 +581,16 @@ function gt_solicitud_resolver(PDO $pdo, $adminId, $idSolicitud, $accion) {
         if ($gymUsuario === null) {
             $pdo->prepare("UPDATE Usuario SET ID_Gimnasio = ? WHERE ID_Usuario = ?")->execute([$miGym, $uid]);
             gt_registrar_movimiento($pdo, $uid, $miGym, 'alta', 'solicitud');
+            $notificarAlta = ['uid' => $uid, 'gym' => $miGym];
         }
         $cerrar->execute(['aceptada', $idSolicitud]);
         return gt_res_ok('Solicitud aprobada. El usuario ya es socio de tu gimnasio.');
     });
+
+    if ($notificarAlta !== null && ($res['body']['ok'] ?? false)) {
+        gt_notificar_cambio_gimnasio($pdo, $notificarAlta['uid'], $notificarAlta['gym'], 'alta', 'solicitud');
+    }
+    return $res;
 }
 
 // ---------------------------------------------------------------- herramienta directa del admin

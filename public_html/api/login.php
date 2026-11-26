@@ -121,6 +121,16 @@ try {
     unset($_SESSION[$kSession]);
 }
 
+if (($u['email_verificado'] ?? 'S') === 'N') {
+    http_response_code(403);
+    echo json_encode([
+        'ok'     => false,
+        'codigo' => 'EMAIL_NO_VERIFICADO',
+        'msg'    => 'Tu correo todavía no fue verificado. Revisá tu casilla (o spam) para confirmar tu cuenta.'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 // Nueva sesión al autenticar (evita fijación de sesión).
 session_regenerate_id(true);
 $_SESSION['user_id'] = (int) $u['ID_Usuario'];

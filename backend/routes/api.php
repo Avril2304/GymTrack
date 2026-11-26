@@ -20,6 +20,8 @@ use App\Http\Controllers\SolicitudController;
 // Rutas de Autenticación
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/verificar-email', [AuthController::class, 'verificarEmail']);
+Route::post('/reenviar-verificacion', [AuthController::class, 'reenviarVerificacion']);
 
 // Rutas de Ejercicios
 Route::get('/ejercicios', [EjercicioController::class, 'index']);

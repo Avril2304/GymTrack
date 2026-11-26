@@ -16,3 +16,6 @@ define('MAIL_SECURE',    'ssl');
 
 // Token secreto para proteger los endpoints de cron
 define('CRON_TOKEN', '');
+
+// URL publica opcional para los enlaces en correos (si se omite, se detecta automaticamente)
+// define('APP_URL', 'https://gymtrack.com.ar');
