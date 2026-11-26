@@ -18,6 +18,7 @@
 
 <p>
   <a href="#caracteristicas-principales">Características</a> ·
+  <a href="#capturas-de-pantalla">Capturas</a> ·
   <a href="#arquitectura">Arquitectura</a> ·
   <a href="#estructura">Estructura</a> ·
   <a href="#documentacion">Documentación</a> ·
@@ -47,6 +48,18 @@
 - **Recordatorios de inactividad (`cron_inactividad.php`):** detecta socios sin actividad reciente y envía correos HTML personalizados evitando reenvíos repetidos.
 - **Resúmenes mensuales con IA (`cron_resumen_mensual.php`):** agrega días entrenados, volumen total y marcas máximas del mes cerrado junto a un análisis motivacional generado por OpenAI.
 - **Catálogo ExerciseDB (`cron_sync_exercisedb.php`):** sincronización incremental por *offset* sin desperdiciar cuota de API, con auditoría centralizada en `Automation_Log`.
+
+---
+
+## Capturas de pantalla
+
+| Acceso y verificación de cuenta | Registro de entrenamientos (`index.html`) |
+| :---: | :---: |
+| <img src="docs/assets/screenshot-login.png" alt="Acceso y verificación" width="100%" /> | <img src="docs/assets/screenshot-app.png" alt="App del socio" width="100%" /> |
+
+| Panel de administración (`admin.html`) | Dashboard de estadísticas (`estadisticas.html`) |
+| :---: | :---: |
+| <img src="docs/assets/screenshot-admin.png" alt="Panel de administración" width="100%" /> | <img src="docs/assets/screenshot-estadisticas.png" alt="Dashboard de estadísticas" width="100%" /> |
 
 ---
 
@@ -101,6 +114,7 @@ GymTrack/
 | --- | --- |
 | [docs/ROLES.md](docs/ROLES.md) | Roles (`Socio` y `Administrador`), circuito de solicitudes y reglas de ingreso |
 | [docs/API.md](docs/API.md) | Endpoints públicos, de socio y de administrador, autenticación y formato de respuestas |
+| [docs/AUTOMATIZACIONES.md](docs/AUTOMATIZACIONES.md) | Coach Virtual IA con *Function Calling*, crons programados y correos transaccionales |
 | [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Estructura en cPanel, archivos privados fuera de Git, orden de despliegue y crons |
 | [docs/DEMO.md](docs/DEMO.md) | Simulador de datos de demostración, cron nocturno y scripts de limpieza |
 | [migrations/README.md](migrations/README.md) | Historial de migraciones SQL y guía para local vs. phpMyAdmin en hosting |
